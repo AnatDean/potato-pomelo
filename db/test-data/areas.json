@@ -1,0 +1,14 @@
+[
+  {
+    "name": "area-a",
+    "location": "central"
+  },
+  {
+    "name": "area-b",
+    "location": "north"
+  },
+  {
+    "name": "area-c",
+    "location": "central"
+  }
+]

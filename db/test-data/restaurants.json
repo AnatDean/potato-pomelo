@@ -1,0 +1,42 @@
+[
+  {
+    "name": "rest-a",
+    "area": "area-a",
+    "type": "bar",
+    "open-late": true,
+    "serves-hot-meals": false,
+    "website": "www.rest-a.com"
+  },
+  {
+    "name": "rest-b",
+    "area": "area-c",
+    "type": "restaurant",
+    "open-late": false,
+    "serves-hot-meals": true,
+    "website": "www.rest-b.com"
+  },
+  {
+    "name": "rest-c",
+    "area": "area-c",
+    "type": "cafe",
+    "open-late": false,
+    "serves-hot-meals": true,
+    "website": "www.rest-c.com"
+  },
+  {
+    "name": "rest-d",
+    "area": "area-b",
+    "type": "cafe",
+    "open-late": true,
+    "serves-hot-meals": false,
+    "website": "www.rest-d.com"
+  },
+  {
+    "name": "rest-e",
+    "area": "area-c",
+    "type": "market",
+    "open-late": true,
+    "serves-hot-meals": false,
+    "website": "www.rest-e.com"
+  }
+]
