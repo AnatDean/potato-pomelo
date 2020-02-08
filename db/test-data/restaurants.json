@@ -1,42 +1,42 @@
 [
   {
-    "name": "rest-a",
-    "area": "area-a",
+    "rest_name": "rest-a",
+    "rest_area": "rest_area-a",
     "type": "bar",
-    "open-late": true,
-    "serves-hot-meals": false,
+    "open_late": true,
+    "serves_hot_meals": false,
     "website": "www.rest-a.com"
   },
   {
-    "name": "rest-b",
-    "area": "area-c",
+    "rest_name": "rest-b",
+    "rest_area": "rest_area-c",
     "type": "restaurant",
-    "open-late": false,
-    "serves-hot-meals": true,
+    "open_late": false,
+    "serves_hot_meals": true,
     "website": "www.rest-b.com"
   },
   {
-    "name": "rest-c",
-    "area": "area-c",
+    "rest_name": "rest-c",
+    "rest_area": "rest_area-c",
     "type": "cafe",
-    "open-late": false,
-    "serves-hot-meals": true,
+    "open_late": false,
+    "serves_hot_meals": true,
     "website": "www.rest-c.com"
   },
   {
-    "name": "rest-d",
-    "area": "area-b",
+    "rest_name": "rest-d",
+    "rest_area": "rest_area-b",
     "type": "cafe",
-    "open-late": true,
-    "serves-hot-meals": false,
+    "open_late": true,
+    "serves_hot_meals": false,
     "website": "www.rest-d.com"
   },
   {
-    "name": "rest-e",
-    "area": "area-c",
+    "rest_name": "rest-e",
+    "rest_area": "rest_area-c",
     "type": "market",
-    "open-late": true,
-    "serves-hot-meals": false,
+    "open_late": true,
+    "serves_hot_meals": false,
     "website": "www.rest-e.com"
   }
 ]
