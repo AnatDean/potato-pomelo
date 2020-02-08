@@ -4,6 +4,7 @@
   "description": "Restful api serving up restaurants in manchester",
   "main": "index.js",
   "scripts": {
+    "setup-db-test": "psql -f ./db/setup-test.sql",
     "migrate:make": "knex migrate:make",
     "migrate:rollback": "knex migrate:rollback",
     "migrate:latest": "knex migrate:latest"
