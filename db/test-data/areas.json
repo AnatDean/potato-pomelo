@@ -1,14 +1,14 @@
 [
   {
-    "name": "area-a",
+    "area_name": "area-a",
     "location": "central"
   },
   {
-    "name": "area-b",
+    "area_name": "area-b",
     "location": "north"
   },
   {
-    "name": "area-c",
+    "area_name": "area-c",
     "location": "central"
   }
 ]
