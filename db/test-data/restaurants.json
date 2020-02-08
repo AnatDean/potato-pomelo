@@ -1,7 +1,7 @@
 [
   {
     "rest_name": "rest-a",
-    "rest_area": "rest_area-a",
+    "rest_area": "area-a",
     "type": "bar",
     "open_late": true,
     "serves_hot_meals": false,
@@ -9,7 +9,7 @@
   },
   {
     "rest_name": "rest-b",
-    "rest_area": "rest_area-c",
+    "rest_area": "area-c",
     "type": "restaurant",
     "open_late": false,
     "serves_hot_meals": true,
@@ -17,7 +17,7 @@
   },
   {
     "rest_name": "rest-c",
-    "rest_area": "rest_area-c",
+    "rest_area": "area-c",
     "type": "cafe",
     "open_late": false,
     "serves_hot_meals": true,
@@ -25,7 +25,7 @@
   },
   {
     "rest_name": "rest-d",
-    "rest_area": "rest_area-b",
+    "rest_area": "area-b",
     "type": "cafe",
     "open_late": true,
     "serves_hot_meals": false,
@@ -33,7 +33,7 @@
   },
   {
     "rest_name": "rest-e",
-    "rest_area": "rest_area-c",
+    "rest_area": "area-c",
     "type": "market",
     "open_late": true,
     "serves_hot_meals": false,
