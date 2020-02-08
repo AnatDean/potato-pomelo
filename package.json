@@ -1,0 +1,27 @@
+{
+  "name": "potato-pomelo",
+  "version": "1.0.0",
+  "description": "Restful api serving up restaurants in manchester",
+  "main": "index.js",
+  "scripts": {
+    "migrate:make": "knex migrate:make",
+    "migrate:rollback": "knex migrate:rollback",
+    "migrate:latest": "knex migrate:latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnatDean/potato-pomelo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnatDean/potato-pomelo/issues"
+  },
+  "homepage": "https://github.com/AnatDean/potato-pomelo#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.20.8",
+    "pg": "^7.18.1"
+  }
+}
