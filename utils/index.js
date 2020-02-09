@@ -70,3 +70,13 @@ exports.formatRestaurants = ({ restaurants, areaRef, typeRef }) => {
   
   */
 };
+
+exports.formatPairs = (pairs, restLookUp) => {
+  return pairs.map(pair => {
+    const [[rest_name, type_id]] = Object.entries(pair);
+    return {
+      rest_id: restLookUp[rest_name],
+      type_id
+    };
+  });
+};

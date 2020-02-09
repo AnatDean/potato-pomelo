@@ -1,4 +1,8 @@
-const { makeRefObject, formatRestaurants } = require('../utils/index');
+const {
+  makeRefObject,
+  formatRestaurants,
+  formatPairs
+} = require('../utils/index');
 
 describe('makeRefObject', () => {
   test('returns an empty object if passed an empty array and empty object', () => {
@@ -175,5 +179,35 @@ describe('formatRestaurants', () => {
     const expectedPairs = [{ 'rest-a': 3 }, { 'rest-a': 2 }, { 'rest-b': 1 }];
     expect(restaurants).toEqual(expectedRestaurants);
     expect(rest_type_pairs).toEqual(expectedPairs);
+  });
+});
+
+describe.only('formatPairs', () => {
+  test('returns an empty array if passed an empty array and empty object', () => {
+    expect(formatPairs([], {})).toEqual([]);
+  });
+  test('returns 1 formatted pair if passed 1 pair and restaurant lookup object', () => {
+    // iteratee logic
+    const restLookup = { 'rest-a': 1 };
+    const pairs = [{ 'rest-a': 2 }];
+    expect(formatPairs(pairs, restLookup)).toEqual([
+      { rest_id: 1, type_id: 2 }
+    ]);
+  });
+  test('returns 2 formatted pairs if passed 2 pairs with same restaurant', () => {
+    const restLookup = { 'rest-a': 1 };
+    const pairs = [{ 'rest-a': 2 }, { 'rest-a': 3 }];
+    expect(formatPairs(pairs, restLookup)).toEqual([
+      { rest_id: 1, type_id: 2 },
+      { rest_id: 1, type_id: 3 }
+    ]);
+  });
+  test('returns formatted pairs', () => {
+    const restLookup = { 'rest-a': 1, 'rest-b': 2 };
+    const pairs = [{ 'rest-a': 2 }, { 'rest-b': 3 }];
+    expect(formatPairs(pairs, restLookup)).toEqual([
+      { rest_id: 1, type_id: 2 },
+      { rest_id: 2, type_id: 3 }
+    ]);
   });
 });
