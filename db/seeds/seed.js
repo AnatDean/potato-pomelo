@@ -1,5 +1,5 @@
 const { areaData, typeData, restaurantData } = require('../test-data/');
-const { makeRefObject } = require('../../utils');
+const { makeRefObject, formatRestaurants } = require('../../utils');
 exports.seed = knex => {
   return knex.migrate
     .rollback()
@@ -21,7 +21,27 @@ exports.seed = knex => {
         key: 'area_name',
         value: 'area_id'
       });
-      // TODO format restaurants then seed
-      // TODO construct data for junction table then seed
-    });
+      const typeLookup = makeRefObject(typeRows, {
+        key: 'type',
+        value: 'type_id'
+      });
+      const {
+        restaurants: formattedRestaurants,
+        rest_type_pairs
+      } = formatRestaurants({
+        restaurants: restaurantData,
+        areaRef: areaLookup,
+        typeRef: typeLookup
+      });
+      return Promise.all([
+        rest_type_pairs,
+        knex
+          .insert(formattedRestaurants)
+          .into('restaurants')
+          .returning('*')
+      ]);
+    })
+    .then((restaurantRows) => {
+      // TODO seed rest-area pairs
+    })
 };
