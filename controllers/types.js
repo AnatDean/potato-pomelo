@@ -1,3 +1,9 @@
+const { selectTypes } = require('../models/types');
+
 exports.getTypes = (req, res, next) => {
-  res.sendStatus(200)
+  selectTypes()
+    .then(types => {
+      res.send({ types });
+    })
+    .catch(next);
 };

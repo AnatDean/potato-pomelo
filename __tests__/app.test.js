@@ -11,10 +11,19 @@ describe.only('/api', () => {
   });
   describe('/types', () => {
     describe('GET', () => {
-      test.only('GET / responds with 200', () =>
+      test('GET / responds with 200', () =>
         request(app)
           .get('/api/types')
           .expect(200));
+      test('GET / responds with 200', () =>
+        request(app)
+          .get('/api/types')
+          .then(({ body: { types } }) => {
+            expect(Array.isArray(types)).toBe(true);
+            types.forEach(type => {
+              expect(type).toContainAllKeys(['type_id', 'type']);
+            });
+          }));
     });
   });
 });
