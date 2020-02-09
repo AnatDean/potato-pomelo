@@ -1,5 +1,9 @@
 const { areaData, typeData, restaurantData } = require('../test-data/');
-const { makeRefObject, formatRestaurants } = require('../../utils');
+const {
+  makeRefObject,
+  formatRestaurants,
+  formatPairs
+} = require('../../utils');
 exports.seed = knex => {
   return knex.migrate
     .rollback()
@@ -41,7 +45,12 @@ exports.seed = knex => {
           .returning('*')
       ]);
     })
-    .then((restaurantRows) => {
-      // TODO seed rest-area pairs
-    })
+    .then(([pairs, restaurantRows]) => {
+      const restRefObj = makeRefObject(restaurantRows, {
+        key: 'rest_name',
+        value: 'rest_id'
+      });
+      const formattedPairs = formatPairs(pairs, restRefObj);
+      return knex.insert(formattedPairs).into('restaurant-types');
+    });
 };
