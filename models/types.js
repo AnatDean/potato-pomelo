@@ -4,9 +4,10 @@ exports.selectTypes = () => {
 };
 
 exports.selectTypeByIdentifier = ({ identifier }) => {
+  const column = isNaN(parseInt(identifier)) ? 'type' : 'type_id';
   return db
     .select('*')
     .from('types')
-    .where('type_id', '=', identifier)
+    .where(column, '=', identifier)
     .first();
 };

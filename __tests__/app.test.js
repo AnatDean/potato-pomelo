@@ -36,6 +36,12 @@ describe.only('/api', () => {
           .then(({ body: { type } }) => {
             expect(type).toEqual({ type: 'bar', type_id: 1 });
           }));
+      test('Providing type in parameter also returns correct type ', () =>
+        request(app)
+          .get('/api/types/bar')
+          .then(({ body: { type } }) => {
+            expect(type).toEqual({ type: 'bar', type_id: 1 });
+          }));
     });
   });
 });
