@@ -3,7 +3,8 @@ const {
   getTypes,
   getTypeByIdentifier,
   postType,
-  patchTypeByIdentifier
+  patchTypeByIdentifier,
+  deleteTypeByIdentifier
 } = require('../controllers/types');
 
 typesRouter
@@ -14,6 +15,7 @@ typesRouter
 typesRouter
   .route('/:identifier')
   .get(getTypeByIdentifier)
-  .patch(patchTypeByIdentifier);
+  .patch(patchTypeByIdentifier)
+  .delete(deleteTypeByIdentifier);
 
 module.exports = typesRouter;

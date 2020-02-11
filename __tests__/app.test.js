@@ -149,6 +149,46 @@ describe('/api', () => {
               expect(msg).toBe('Bad Request');
             }));
       });
+      describe.only('DELETE', () => {
+        // ------ DELETE A SINGLE TYPE ------
+
+        test('DELETE responds with 204', () =>
+          request(app)
+            .delete('/api/types/1')
+            .expect(204));
+        test('removes correct type', () =>
+          request(app)
+            .delete('/api/types/1')
+            .then(_ =>
+              request(app)
+                .get('/api/types/1')
+                .expect(404)
+            ));
+        test.todo(
+          'when making endpoint for rest-types table use to prove delete has deleted on cascade the entries there'
+        );
+        // ------ ERRORS  ------
+        test('DELETE responds with 404 when non existent id', () =>
+          request(app)
+            .delete('/api/types/100')
+            .expect(404));
+        test('DELETE gives not found message  when non existent id', () =>
+          request(app)
+            .delete('/api/types/100')
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type 100 not found');
+            }));
+        test('DELETE responds with 400  when non id given', () =>
+          request(app)
+            .delete('/api/types/xyz')
+            .expect(400));
+        test('DELETE responds bad request when non id given', () =>
+          request(app)
+            .delete('/api/types/xyz')
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
+      });
     });
   });
 });

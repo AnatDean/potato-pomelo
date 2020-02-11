@@ -2,7 +2,8 @@ const {
   selectTypes,
   selectTypeByIdentifier,
   insertType,
-  updateType
+  updateType,
+  removeType
 } = require('../models/types');
 
 exports.getTypes = (req, res, next) => {
@@ -33,6 +34,14 @@ exports.patchTypeByIdentifier = (req, res, next) => {
   updateType(req.body, req.params)
     .then(type => {
       res.send({ type });
+    })
+    .catch(next);
+};
+
+exports.deleteTypeByIdentifier = (req, res, next) => {
+  removeType(req.params)
+    .then(() => {
+      res.sendStatus(204);
     })
     .catch(next);
 };

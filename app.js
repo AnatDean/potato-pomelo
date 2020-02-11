@@ -15,6 +15,10 @@ app.use((err, req, res, next) => {
     '23502': {
       status: 400,
       msg: 'Bad Request'
+    },
+    '22P02': {
+      status: 400,
+      msg: 'Bad Request'
     }
   };
   if (err.status) {

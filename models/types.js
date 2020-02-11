@@ -46,3 +46,18 @@ exports.updateType = ({ type }, { identifier }) => {
               });
         });
 };
+
+exports.removeType = ({ identifier }) => {
+  return db
+    .from('types')
+    .where('type_id', '=', identifier)
+    .del()
+    .then(deleteCount => {
+      return deleteCount
+        ? true
+        : Promise.reject({
+            status: 404,
+            msg: `Type ${identifier} not found`
+          });
+    });
+};
