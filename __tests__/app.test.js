@@ -38,6 +38,7 @@ describe('/api', () => {
           .then(({ body: { type } }) => {
             expect(type).toEqual({ type: 'new-type', type_id: 5 });
           }));
+      // ------ ERRORS ------
       test('POST / responds with 400 if provided bad input', () => {
         const badInputs = [{ type: 4 }, { ty: 'new-type' }, {}];
         const badResponses = badInputs.map(badInput =>
@@ -48,52 +49,106 @@ describe('/api', () => {
         );
         return Promise.all(badResponses);
       });
+      test('POST / responds with added type object', () =>
+        request(app)
+          .post('/api/types')
+          .send({ tye: 'new-type' })
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Bad Request');
+          }));
     });
     describe('/:identifier', () => {
       // ------ GET A SINGLE TYPE ------
-      test('GET responds with 200', () =>
-        request(app)
-          .get('/api/types/1')
-          .expect(200));
-      test('GET responds with single type object', () =>
-        request(app)
-          .get('/api/types/1')
-          .then(({ body: { type } }) => {
-            expect(type).toEqual({ type: 'bar', type_id: 1 });
-          }));
-      test('Providing type in parameter also returns correct type ', () =>
-        request(app)
-          .get('/api/types/bar')
-          .then(({ body: { type } }) => {
-            expect(type).toEqual({ type: 'bar', type_id: 1 });
-          }));
-      // ERRORS
-      test("If given an id that doesn't exist will respond with 404", () =>
-        request(app)
-          .get('/api/types/10')
-          .expect(404));
-      test("If given an id that doesn't exist will respond with error message", () =>
-        request(app)
-          .get('/api/types/10')
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Type 10 not found');
-          }));
-      test("If given a type name that doesn't exist will respond with 404", () =>
-        request(app)
-          .get('/api/types/hey')
-          .expect(404));
-      test("If given a type name that doesn't exist will respond with error message", () =>
-        request(app)
-          .get('/api/types/hey')
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Type hey not found');
-          }));
-      test("If given a type name that doesn't exist will respond with error message", () =>
-        request(app)
-          .get('/api/types/{}')
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Type {} not found');
-          }));
+      describe('GET', () => {
+        test('GET responds with 200', () =>
+          request(app)
+            .get('/api/types/1')
+            .expect(200));
+        test('GET responds with single type object', () =>
+          request(app)
+            .get('/api/types/1')
+            .then(({ body: { type } }) => {
+              expect(type).toEqual({ type: 'bar', type_id: 1 });
+            }));
+        test('GET Providing type in parameter also returns correct type ', () =>
+          request(app)
+            .get('/api/types/bar')
+            .then(({ body: { type } }) => {
+              expect(type).toEqual({ type: 'bar', type_id: 1 });
+            }));
+        // ------ ERRORS ------
+        test("If given an id that doesn't exist will respond with 404", () =>
+          request(app)
+            .get('/api/types/10')
+            .expect(404));
+        test("If given an id that doesn't exist will respond with error message", () =>
+          request(app)
+            .get('/api/types/10')
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type 10 not found');
+            }));
+        test("If given a type name that doesn't exist will respond with 404", () =>
+          request(app)
+            .get('/api/types/hey')
+            .expect(404));
+        test("If given a type name that doesn't exist will respond with error message", () =>
+          request(app)
+            .get('/api/types/hey')
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type hey not found');
+            }));
+        test("If given a type name that doesn't exist will respond with error message", () =>
+          request(app)
+            .get('/api/types/{}')
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type {} not found');
+            }));
+      });
+      describe('PATCH', () => {
+        // ----- PATCH A SINGLE TYPE -----
+        test('PATCH responds with 200 ', () =>
+          request(app)
+            .patch('/api/types/1')
+            .send({ type: 'a' })
+            .expect(200));
+        test('PATCH responds with updated type object', () =>
+          request(app)
+            .patch('/api/types/2')
+            .send({ type: 'a' })
+            .then(({ body: { type } }) => {
+              expect(type).toEqual({ type_id: 2, type: 'a' });
+            }));
+        // ----- ERRORS -----
+        test('PATCH responds with 404 on unfound typeid', () =>
+          request(app)
+            .patch('/api/types/200')
+            .send({ type: 'a' })
+            .expect(404));
+        test('PATCH responds with not found error on unfound typeid', () =>
+          request(app)
+            .patch('/api/types/200')
+            .send({ type: 'a' })
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type 200 not found');
+            }));
+        test('PATCH responds with 400 on bad input typeid', () => {
+          const badInputs = [{ type: 4 }, { ty: 'new-type' }, {}];
+          const badResponses = badInputs.map(badInput =>
+            request(app)
+              .patch('/api/types/3')
+              .send(badInput)
+              .expect(400)
+          );
+          return Promise.all(badResponses);
+        });
+        test('PATCH responds with not found error on un-found typeid', () =>
+          request(app)
+            .patch('/api/types/3')
+            .send({ tpe: 'a' })
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
+      });
     });
   });
 });

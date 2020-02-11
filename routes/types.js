@@ -2,7 +2,8 @@ const typesRouter = require('express').Router();
 const {
   getTypes,
   getTypeByIdentifier,
-  postType
+  postType,
+  patchTypeByIdentifier
 } = require('../controllers/types');
 
 typesRouter
@@ -10,6 +11,9 @@ typesRouter
   .get(getTypes)
   .post(postType);
 
-typesRouter.route('/:identifier').get(getTypeByIdentifier);
+typesRouter
+  .route('/:identifier')
+  .get(getTypeByIdentifier)
+  .patch(patchTypeByIdentifier);
 
 module.exports = typesRouter;

@@ -10,11 +10,11 @@ app.use((err, req, res, next) => {
   const postgresErrorCodes = {
     '42703': {
       status: 400,
-      msg: 'Bad Input'
+      msg: 'Bad Request'
     },
     '23502': {
       status: 400,
-      msg: 'Bad Input'
+      msg: 'Bad Request'
     }
   };
   if (err.status) {

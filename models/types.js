@@ -27,3 +27,22 @@ exports.selectTypeByIdentifier = ({ identifier }) => {
         : Promise.reject({ status: 404, msg: `Type ${identifier} not found` });
     });
 };
+
+exports.updateType = ({ type }, { identifier }) => {
+  const isValidUpdateBody = type && !/\d/.test(type);
+  return !isValidUpdateBody
+    ? Promise.reject({ status: 400, msg: 'Bad Request' })
+    : db
+        .where('type_id', '=', identifier)
+        .from('types')
+        .update({ type })
+        .returning('*')
+        .then(([type]) => {
+          return type
+            ? type
+            : Promise.reject({
+                status: 404,
+                msg: `Type ${identifier} not found`
+              });
+        });
+};
