@@ -191,4 +191,77 @@ describe('/api', () => {
       });
     });
   });
+  describe.only('/areas', () => {
+    describe('/', () => {
+      describe('GET', () => {
+        test('GET responds with status 200', () =>
+          request(app)
+            .get('/api/areas')
+            .expect(200));
+        test('GET responds with an array of area objects', () =>
+          request(app)
+            .get('/api/areas')
+            .then(({ body: { areas } }) => {
+              expect(Array.isArray(areas)).toBe(true);
+              areas.forEach(area => {
+                expect(area).toContainKeys([
+                  'area_id',
+                  'area_name',
+                  'location'
+                ]);
+              });
+            }));
+        test('GET areas have count of restaurants in them ', () =>
+          request(app)
+            .get('/api/areas')
+            .then(({ body: { areas } }) => {
+              expect(areas[0].restaurant_count).toBe(1);
+              expect(areas[2].restaurant_count).toBe(3);
+            }));
+        test('GET by default sorts areas alphabetically by area_name', () =>
+          request(app)
+            .get('/api/areas')
+            .then(({ body: { areas } }) => {
+              expect(areas[0].area_name).toBe('area-a');
+              expect(areas[2].area_name).toBe('area-z');
+            }));
+        test('? sort by query will sorts alphabetically by chosen column', () =>
+          request(app)
+            .get('/api/areas?sort_by=location')
+            .then(({ body: { areas } }) => {
+              expect(areas[0].location).toBe('central');
+              expect(areas[2].location).toBe('north');
+            }));
+
+        test('? location query filters areas by selected location', () =>
+          request(app)
+            .get('/api/areas?location=central')
+            .then(({ body: { areas } }) => {
+              const allAreasAreCentral = areas.every(
+                area => area.location === 'central'
+              );
+              expect(allAreasAreCentral).toBe(true);
+            }));
+
+        // ----- ERRORS ------
+        test('will ignore silly queries and give default alphabetical by name instead', () => {
+          const sillyQueries = ['bleugh=central', 'sort_by=bleurhg'];
+          const sillyRequests = sillyQueries.map(query => {
+            return request(app)
+              .get(`/api/areas?${query}`)
+              .expect(200)
+              .then(({ body: { areas } }) => {
+                expect(areas[0].area_name).toBe('area-a');
+                expect(areas[2].area_name).toBe('area-z');
+              });
+          });
+          return Promise.all(sillyRequests);
+        });
+        test('will respond with  404 if location query isnt an existing location', () =>
+          request(app)
+            .get('/api/areas?location=hogwarts')
+            .expect(404));
+      });
+    });
+  });
 });
