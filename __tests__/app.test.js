@@ -149,7 +149,7 @@ describe('/api', () => {
               expect(msg).toBe('Bad Request');
             }));
       });
-      describe.only('DELETE', () => {
+      describe('DELETE', () => {
         // ------ DELETE A SINGLE TYPE ------
 
         test('DELETE responds with 204', () =>
