@@ -243,7 +243,12 @@ describe('/api', () => {
               );
               expect(allAreasAreCentral).toBe(true);
             }));
-
+        test("will respond with empty array if location query isn't an existing location", () =>
+          request(app)
+            .get('/api/areas?location=hogwarts')
+            .then(({ body: { areas } }) => {
+              expect(areas).toEqual([]);
+            }));
         // ----- ERRORS ------
         test('will ignore silly queries and give default alphabetical by name instead', () => {
           const sillyQueries = ['bleugh=central', 'sort_by=bleurhg'];
@@ -258,10 +263,6 @@ describe('/api', () => {
           });
           return Promise.all(sillyRequests);
         });
-        test('will respond with  404 if location query isnt an existing location', () =>
-          request(app)
-            .get('/api/areas?location=hogwarts')
-            .expect(404));
       });
       describe('POST', () => {
         // ----- POST AN AREA ------
@@ -300,6 +301,32 @@ describe('/api', () => {
           return Promise.all(badRequests);
         });
       });
+    });
+    describe('/:identifier', () => {
+      // ----- GET AN AREA BY ID ------
+      describe('GET', () => {
+        test('GET responds with 200', () =>
+          request(app)
+            .get('/api/areas/2')
+            .expect(200));
+        test('GET responds with correct area object', () =>
+          request(app)
+            .get('/api/areas/2')
+            .then(({ body: { area } }) => {
+              expect(area.area_id).toBe(2);
+            }));
+        test('GET responds with 200  requested by name', () =>
+          request(app)
+            .get('/api/areas/area-a')
+            .expect(200));
+        // ----- ERRORS ------
+        test('GET responds with 404 if non existent id', () =>
+          request(app)
+            .get('/api/areas/200')
+            .expect(404));
+      });
+      describe('PATCH', () => {});
+      describe('DELETE', () => {});
     });
   });
 });

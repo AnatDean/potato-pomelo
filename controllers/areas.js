@@ -1,7 +1,11 @@
-const { selectAreas, insertArea } = require('../models/areas');
+const {
+  selectAreas,
+  insertArea,
+  selectAreaByIdentifier
+} = require('../models/areas');
 exports.getAreas = (req, res, next) => {
   selectAreas(req.query)
-    .then(([_, areas]) => {
+    .then(areas => {
       res.send({ areas });
     })
     .catch(next);
@@ -10,5 +14,13 @@ exports.getAreas = (req, res, next) => {
 exports.postArea = (req, res, next) => {
   insertArea(req.body)
     .then(area => res.status(201).send({ area }))
+    .catch(next);
+};
+
+exports.getAreaByIdentifier = (req, res, next) => {
+  selectAreaByIdentifier(req.params)
+    .then(area => {
+      res.send({ area });
+    })
     .catch(next);
 };

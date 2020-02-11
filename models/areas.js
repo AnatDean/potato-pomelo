@@ -20,20 +20,21 @@ const selectAreas = ({ location, sort_by = 'area_name' }) => {
         ...restOfArea
       }));
     });
-  return Promise.all([selectAreasByLocation(location), mainQuery]);
+  return mainQuery;
 };
-const selectAreasByLocation = location => {
-  return !location
-    ? true
-    : db
-        .select('*')
-        .from('areas')
-        .where('location', '=', location)
-        .then(areas => {
-          if (!areas.length)
-            return Promise.reject({ status: 404, msg: 'Area does not exist' });
-          else return areas;
-        });
+const selectAreaByIdentifier = ({ identifier }) => {
+  const column = /\d/.test(identifier) ? 'area_id' : 'area_name';
+
+  return db
+    .select('*')
+    .from('areas')
+    .where({ [column]: identifier })
+    .first()
+    .then(area => {
+      return area
+        ? area
+        : Promise.reject({ status: 404, msg: 'Area does not exist' });
+    });
 };
 
 const insertArea = ({ area_name, location }) => {
@@ -46,4 +47,4 @@ const insertArea = ({ area_name, location }) => {
         .returning('*')
         .then(([area]) => area);
 };
-module.exports = { selectAreas, insertArea };
+module.exports = { selectAreas, insertArea, selectAreaByIdentifier };
