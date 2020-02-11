@@ -1,7 +1,14 @@
 const typesRouter = require('express').Router();
-const { getTypes, getTypeByIdentifier } = require('../controllers/types');
+const {
+  getTypes,
+  getTypeByIdentifier,
+  postType
+} = require('../controllers/types');
 
-typesRouter.route('/').get(getTypes);
+typesRouter
+  .route('/')
+  .get(getTypes)
+  .post(postType);
 
 typesRouter.route('/:identifier').get(getTypeByIdentifier);
 

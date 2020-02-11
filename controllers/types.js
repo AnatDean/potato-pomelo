@@ -1,9 +1,21 @@
-const { selectTypes, selectTypeByIdentifier } = require('../models/types');
+const {
+  selectTypes,
+  selectTypeByIdentifier,
+  insertType
+} = require('../models/types');
 
 exports.getTypes = (req, res, next) => {
   selectTypes()
     .then(types => {
       res.send({ types });
+    })
+    .catch(next);
+};
+
+exports.postType = (req, res, next) => {
+  insertType(req.body)
+    .then(type => {
+      res.status(201).send({ type });
     })
     .catch(next);
 };
