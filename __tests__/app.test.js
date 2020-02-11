@@ -191,9 +191,10 @@ describe('/api', () => {
       });
     });
   });
-  describe.only('/areas', () => {
+  describe('/areas', () => {
     describe('/', () => {
       describe('GET', () => {
+        // ----- GET ALL AREAS -----
         test('GET responds with status 200', () =>
           request(app)
             .get('/api/areas')
@@ -261,6 +262,43 @@ describe('/api', () => {
           request(app)
             .get('/api/areas?location=hogwarts')
             .expect(404));
+      });
+      describe('POST', () => {
+        // ----- POST AN AREA ------
+        test('POST responds with status 201', () =>
+          request(app)
+            .post('/api/areas')
+            .send({ area_name: 'test-area', location: 'test-location' })
+            .expect(201));
+        test('POST responds with added area object', () =>
+          request(app)
+            .post('/api/areas')
+            .send({ area_name: 'test-area', location: 'test-location' })
+            .then(({ body: { area } }) => {
+              expect(area).toEqual({
+                area_name: 'test-area',
+                location: 'test-location',
+                area_id: 4
+              });
+            }));
+        // ----- ERRORS ------
+        test('POST with bad input responds with status 400', () => {
+          const badInputs = [
+            { ar_nm: 'test-area', location: 'test-location' },
+            { area_name: 'test-areas', location: 4 },
+            {}
+          ];
+          const badRequests = badInputs.map(badInput => {
+            return request(app)
+              .post('/api/areas')
+              .send(badInput)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Bad Request');
+              });
+          });
+          return Promise.all(badRequests);
+        });
       });
     });
   });

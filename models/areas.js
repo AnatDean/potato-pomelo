@@ -35,4 +35,15 @@ const selectAreasByLocation = location => {
           else return areas;
         });
 };
-module.exports = { selectAreas };
+
+const insertArea = ({ area_name, location }) => {
+  const invalidInputProvided = /\d/.test(area_name) || /\d/.test(location);
+  return !area_name || !location || invalidInputProvided
+    ? Promise.reject({ status: 400, msg: 'Bad Request' })
+    : db
+        .insert({ area_name, location })
+        .into('areas')
+        .returning('*')
+        .then(([area]) => area);
+};
+module.exports = { selectAreas, insertArea };
