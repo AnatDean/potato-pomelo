@@ -67,9 +67,22 @@ const updateAreaById = ({ identifier }, body) => {
         : Promise.reject({ status: 404, msg: 'Area does not exist' });
     });
 };
+
+const removeAreaById = ({ identifier }) => {
+  return db
+    .from('areas')
+    .where({ area_id: identifier })
+    .del()
+    .then(deleteCount => {
+      return (
+        !deleteCount && Promise.reject({ status: 404, msg: 'Area not found' })
+      );
+    });
+};
 module.exports = {
   selectAreas,
   insertArea,
   selectAreaByIdentifier,
-  updateAreaById
+  updateAreaById,
+  removeAreaById
 };

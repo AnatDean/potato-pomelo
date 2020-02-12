@@ -380,7 +380,34 @@ describe('/api', () => {
         });
       });
       describe('DELETE', () => {
-        test.todo('delete returns 204');
+        // ----- DELETE AN AREA BY ID ------
+        test('DELETE responds with 204', () =>
+          request(app)
+            .delete('/api/areas/2')
+            .expect(204));
+        test('DELETE removes appropriate area', () =>
+          request(app)
+            .delete('/api/areas/1')
+            .then(() => {
+              return request(app)
+                .get('/api/areas/1')
+                .expect(404);
+            }));
+        // ----- ERRORS ------
+        test('DELETE responds with 404 when non existent id', () =>
+          request(app)
+            .delete('/api/areas/100')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area not found');
+            }));
+        test('DELETE responds with 400 when passed a bad id', () =>
+          request(app)
+            .delete('/api/areas/bad')
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
       });
     });
   });

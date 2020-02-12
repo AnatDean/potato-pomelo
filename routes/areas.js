@@ -3,7 +3,8 @@ const {
   getAreas,
   postArea,
   getAreaByIdentifier,
-  patchAreaById
+  patchAreaById,
+  deleteAreaById
 } = require('../controllers/areas');
 
 areasRouter
@@ -14,6 +15,7 @@ areasRouter
 areasRouter
   .route('/:identifier')
   .get(getAreaByIdentifier)
-  .patch(patchAreaById);
+  .patch(patchAreaById)
+  .delete(deleteAreaById);
 
 module.exports = areasRouter;
