@@ -1,7 +1,8 @@
 const {
   selectAreas,
   insertArea,
-  selectAreaByIdentifier
+  selectAreaByIdentifier,
+  updateAreaById
 } = require('../models/areas');
 exports.getAreas = (req, res, next) => {
   selectAreas(req.query)
@@ -19,6 +20,14 @@ exports.postArea = (req, res, next) => {
 
 exports.getAreaByIdentifier = (req, res, next) => {
   selectAreaByIdentifier(req.params)
+    .then(area => {
+      res.send({ area });
+    })
+    .catch(next);
+};
+
+exports.patchAreaById = (req, res, next) => {
+  updateAreaById(req.params, req.body)
     .then(area => {
       res.send({ area });
     })

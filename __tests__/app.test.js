@@ -323,10 +323,65 @@ describe('/api', () => {
         test('GET responds with 404 if non existent id', () =>
           request(app)
             .get('/api/areas/200')
-            .expect(404));
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area does not exist');
+            }));
       });
-      describe('PATCH', () => {});
-      describe('DELETE', () => {});
+      describe('PATCH', () => {
+        // ----- UPDATE AN AREA BY ID ------
+        test('PATCH responds with status 200', () =>
+          request(app)
+            .patch('/api/areas/1')
+            .send({ area_name: 'new-name' })
+            .expect(200));
+        test('PATCH responds with updated area object', () =>
+          request(app)
+            .patch('/api/areas/1')
+            .send({ area_name: 'new-name' })
+            .then(({ body: { area } }) => {
+              expect(area).toEqual({
+                area_id: 1,
+                area_name: 'new-name',
+                location: 'central'
+              });
+              return request(app)
+                .get('/api/areas/1')
+                .then(({ body: { area } }) => {
+                  expect(area.area_name).toBe('new-name');
+                });
+            }));
+        // ----- ERRORS ------
+        test('PATCH responds with 404 if non existent id ', () =>
+          request(app)
+            .patch('/api/areas/100')
+            .send({ area_name: 'new-name' })
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area does not exist');
+            }));
+        test('PATCH responds with 400 if bad body input', () => {
+          const badInputs = [
+            {},
+            { badKey: 'new-name' },
+            { area_name: 9 },
+            { area_id: 3 }
+          ];
+          const badRequests = badInputs.map(badInput =>
+            request(app)
+              .patch('/api/areas/1')
+              .send(badInput)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Bad Request');
+              })
+          );
+          return Promise.all(badRequests);
+        });
+      });
+      describe('DELETE', () => {
+        test.todo('delete returns 204');
+      });
     });
   });
 });

@@ -47,4 +47,29 @@ const insertArea = ({ area_name, location }) => {
         .returning('*')
         .then(([area]) => area);
 };
-module.exports = { selectAreas, insertArea, selectAreaByIdentifier };
+
+const updateAreaById = ({ identifier }, body) => {
+  const { area_name, location } = body;
+  const invalidAreaName = area_name && /\d/.test(area_name);
+  const invalidLocation = location && /\d/.test(location);
+
+  if (invalidAreaName || invalidLocation || (!area_name && !location)) {
+    return Promise.reject({ status: 400, msg: 'Bad Request' });
+  }
+  return db
+    .from('areas')
+    .where({ area_id: identifier })
+    .update(body)
+    .returning('*')
+    .then(([area]) => {
+      return area
+        ? area
+        : Promise.reject({ status: 404, msg: 'Area does not exist' });
+    });
+};
+module.exports = {
+  selectAreas,
+  insertArea,
+  selectAreaByIdentifier,
+  updateAreaById
+};

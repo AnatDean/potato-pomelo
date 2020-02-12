@@ -2,7 +2,8 @@ const areasRouter = require('express').Router();
 const {
   getAreas,
   postArea,
-  getAreaByIdentifier
+  getAreaByIdentifier,
+  patchAreaById
 } = require('../controllers/areas');
 
 areasRouter
@@ -10,6 +11,9 @@ areasRouter
   .get(getAreas)
   .post(postArea);
 
-areasRouter.route('/:identifier').get(getAreaByIdentifier);
+areasRouter
+  .route('/:identifier')
+  .get(getAreaByIdentifier)
+  .patch(patchAreaById);
 
 module.exports = areasRouter;
