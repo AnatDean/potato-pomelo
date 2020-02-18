@@ -80,3 +80,33 @@ exports.formatPairs = (pairs, restLookUp) => {
     };
   });
 };
+
+const groupTypesByRestaurantId = (rest_id, rest_types) => {
+  return rest_types.reduce(
+    (
+      acc,
+      { rest_id: current_rest_id, type_id: current_type_id, type: current_type }
+    ) => {
+      return current_rest_id === rest_id
+        ? acc.concat([{ type_id: current_type_id, type: current_type }])
+        : acc;
+    },
+    []
+  );
+};
+
+exports.formatRestaurantTypeQuery = (restaurants, rest_types) => {
+  const formattedRestaurants = restaurants.map(
+    ({ type_id, rest_id, ...otherKeys }) => {
+      const currentRestTypes = groupTypesByRestaurantId(rest_id, rest_types);
+      return { ...otherKeys, rest_id, rest_types: currentRestTypes };
+    }
+  );
+  const duplicatesRemoved = formattedRestaurants.filter((restaurant, i) => {
+    const index = formattedRestaurants.indexOf(
+      formattedRestaurants.find(r => r.rest_id === restaurant.rest_id)
+    );
+    return index === i;
+  });
+  return duplicatesRemoved;
+};

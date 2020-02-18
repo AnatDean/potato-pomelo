@@ -216,7 +216,7 @@ describe('/api', () => {
           request(app)
             .get('/api/areas')
             .then(({ body: { areas } }) => {
-              expect(areas[0].restaurant_count).toBe(1);
+              expect(areas[0].restaurant_count).toBe(2);
               expect(areas[2].restaurant_count).toBe(3);
             }));
         test('GET by default sorts areas alphabetically by area_name', () =>
@@ -407,6 +407,115 @@ describe('/api', () => {
             .expect(400)
             .then(({ body: { msg } }) => {
               expect(msg).toBe('Bad Request');
+            }));
+      });
+    });
+  });
+  describe('/restaurants', () => {
+    describe('GET /', () => {
+      test('GET / responds with 200', () =>
+        request(app)
+          .get('/api/restaurants')
+          .expect(200));
+      test('GET / responds with an array of restaurant objects', () =>
+        request(app)
+          .get('/api/restaurants')
+          .then(({ body: { restaurants } }) => {
+            expect(Array.isArray(restaurants)).toBe(true);
+            restaurants.forEach(restaurant => {
+              expect(restaurant).toContainKeys([
+                'rest_id',
+                'rest_name',
+                'open_late',
+                'serves_hot_meals',
+                'area_id',
+                'website'
+              ]);
+            });
+          }));
+      test('GET / responds with array of all of restaurants type ids', () =>
+        request(app)
+          .get('/api/restaurants')
+          .then(({ body: { restaurants } }) => {
+            expect(restaurants[0]).toContainKeys(['rest_types']);
+            expect(restaurants[0].rest_types).toEqual([
+              { type_id: 1, type: 'bar' },
+              { type_id: 2, type: 'cafe' }
+            ]);
+          }));
+      test('GET / defaults order by alphabetical by name', () =>
+        request(app)
+          .get('/api/restaurants')
+          .then(({ body: { restaurants } }) => {
+            expect(restaurants[0].rest_name).toBe('rest-a');
+            expect(restaurants[5].rest_name).toBe('rest-e');
+          }));
+      describe('Queries', () => {
+        test('GET ?order_by can reorder by name zetabetically', () =>
+          request(app)
+            .get('/api/restaurants?order_by=desc')
+            .then(({ body: { restaurants } }) => {
+              expect(restaurants[0].rest_name).toBe('rest-e');
+              expect(restaurants[5].rest_name).toBe('rest-a');
+            }));
+        test('GET ?open_late can filter restaurants by only open late', () =>
+          request(app)
+            .get('/api/restaurants?open_late=true')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.open_late).toBe(true);
+              });
+            }));
+        test('GET ?hot_meal can filter restaurants by those that serve hot meals ', () =>
+          request(app)
+            .get('/api/restaurants?hot_meal=true')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.serves_hot_meals).toBe(true);
+              });
+            }));
+        test('GET ?area can filter restaurants by a specific area', () =>
+          request(app)
+            .get('/api/restaurants?area=2')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.area_id).toBe(2);
+              });
+            }));
+        test('GET ?area can filter restaurants by a multiple areas', () =>
+          request(app)
+            .get('/api/restaurants?area=2,3')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.area_id === 2 || rest.area_id === 3).toBeTruthy();
+              });
+            }));
+        test('GET ?type can filter restaurants by certain types', () =>
+          request(app)
+            .get('/api/restaurants?type=1')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.rest_types.find(r => r.type_id === 1)).toBeTruthy();
+              });
+            }));
+        test('GET ?type can filter restaurants by multiple types', () =>
+          request(app)
+            .get('/api/restaurants?type=1,2')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(
+                  rest.rest_types.find(r => r.type_id === 1 || r.type_id === 2)
+                ).toBeTruthy();
+              });
+            }));
+        test('GET ?rest_name can filter restaurants by search term', () =>
+          request(app)
+            .get('/api/restaurants?rest_name=d')
+            .then(({ body: { restaurants } }) => {
+              expect(restaurants.length).toBe(2);
+              restaurants.forEach(rest => {
+                expect(rest.rest_name.includes('d')).toBeTruthy();
+              });
             }));
       });
     });

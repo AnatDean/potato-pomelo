@@ -8,6 +8,14 @@
     "website": "www.rest-a.com"
   },
   {
+    "rest_name": "rest-dd",
+    "area": "area-a",
+    "types": ["bar", "cafe"],
+    "open_late": true,
+    "serves_hot_meals": false,
+    "website": "www.rest-a.com"
+  },
+  {
     "rest_name": "rest-b",
     "area": "area-z",
     "types": ["restaurant"],
