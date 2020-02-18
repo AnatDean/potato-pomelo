@@ -498,6 +498,7 @@ describe('/api', () => {
                 expect(rest.rest_types.find(r => r.type_id === 1)).toBeTruthy();
               });
             }));
+
         test('GET ?type can filter restaurants by multiple types', () =>
           request(app)
             .get('/api/restaurants?type=1,2')
@@ -515,6 +516,15 @@ describe('/api', () => {
               expect(restaurants.length).toBe(2);
               restaurants.forEach(rest => {
                 expect(rest.rest_name.includes('d')).toBeTruthy();
+              });
+            }));
+        test('GET ? can combine queries', () =>
+          request(app)
+            .get('/api/restaurants?type=2&open_late=true')
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(rest.open_late).toBe(true);
+                expect(rest.rest_types.find(r => r.type_id === 2)).toBeTruthy();
               });
             }));
       });
