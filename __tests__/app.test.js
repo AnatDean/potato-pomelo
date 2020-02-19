@@ -454,7 +454,7 @@ describe('/api', () => {
         test('GET ?order_by can reorder by name zetabetically', () =>
           request(app)
             .get('/api/restaurants?order_by=desc')
-            .then(({ body: { restaurants } }) => {
+            .then(({ body: { restaurants, msg } }) => {
               expect(restaurants[0].rest_name).toBe('rest-e');
               expect(restaurants[5].rest_name).toBe('rest-a');
             }));
@@ -509,6 +509,19 @@ describe('/api', () => {
                 ).toBeTruthy();
               });
             }));
+        test('GET ?type can filter restaurants by multiple types', () =>
+          request(app)
+            .get('/api/restaurants?type=bar,cafe')
+            .expect(200)
+            .then(({ body: { restaurants } }) => {
+              restaurants.forEach(rest => {
+                expect(
+                  rest.rest_types.find(
+                    r => r.type === 'bar' || r.type === 'cafe'
+                  )
+                ).toBeTruthy();
+              });
+            }));
         test('GET ?rest_name can filter restaurants by search term', () =>
           request(app)
             .get('/api/restaurants?rest_name=d')
@@ -527,6 +540,95 @@ describe('/api', () => {
                 expect(rest.rest_types.find(r => r.type_id === 2)).toBeTruthy();
               });
             }));
+      });
+      describe('Errors', () => {
+        test("If queried type id doesn't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?type=345')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type 345 not found');
+            }));
+
+        test("If queried type doesn't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?type=not-a-type')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type not-a-type not found');
+            }));
+        test("If one of multiple queried types doesn't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?type=not-a-type,cafe')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Type not-a-type not found');
+            }));
+
+        test("If queried area id doesn't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?area=345')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area does not exist');
+            }));
+        test("If queried area doesn't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?area=not-an-area')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area does not exist');
+            }));
+        test("If one of multiple queried areas don't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?area=area-a,bad')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Area does not exist');
+            }));
+        test('if other queries will send bad request', () => {
+          const nonsensicalQueries = [
+            'open_late=bad',
+            'hot_meal=bad',
+            'order_by=bad'
+          ];
+          const badRequests = nonsensicalQueries.map(query =>
+            request(app)
+              .get(`/api/restaurants?${query}`)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Bad Request');
+              })
+          );
+          return Promise.all(badRequests);
+        });
+        test('if try to mix and match multiple types - using id and name will 400', () =>
+          request(app)
+            .get('/api/restaurants?type=1,cafe')
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe(
+                'Bad Request, for multiple queries you must choose either ids or names'
+              );
+            }));
+        test('if try to mix and match multiple areas - using id and name will 400', () =>
+          request(app)
+            .get('/api/restaurants?area=1,area-a')
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe(
+                'Bad Request, for multiple queries you must choose either ids or names'
+              );
+            }));
+        test("if any of multiple queried areas don't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?area=1,200')
+            .expect(404));
+        test("if any of multiple queried types don't exist, will respond with 404", () =>
+          request(app)
+            .get('/api/restaurants?type=not-there,cafe')
+            .expect(404));
+        test.todo("If queried rest_name doesn't exist, will respond with 404");
       });
     });
   });

@@ -1,6 +1,6 @@
 const restaurantsRouter = require('express').Router();
 const { getRestaurants } = require('../controllers/restaurants');
-
-restaurantsRouter.route('/').get(getRestaurants);
+const { handleMultipleQueryValues } = require('../middleware/');
+restaurantsRouter.route('/').get(handleMultipleQueryValues, getRestaurants);
 
 module.exports = restaurantsRouter;

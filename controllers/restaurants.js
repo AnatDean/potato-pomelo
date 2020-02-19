@@ -1,6 +1,8 @@
 const { selectRestaurants } = require('../models/restaurants');
+const { checkExists } = require('../models/utils');
 exports.getRestaurants = (req, res, next) => {
-  selectRestaurants(req.query)
+  checkExists(req.query)
+    .then(() => selectRestaurants(req.query))
     .then(restaurants => {
       res.send({ restaurants });
     })
