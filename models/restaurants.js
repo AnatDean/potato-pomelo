@@ -1,6 +1,26 @@
 const db = require('../db/connection');
 const { formatRestaurantTypeQuery } = require('../utils/');
 const { checkIfMixedQueryTypes } = require('./utils');
+exports.updateRestaurant = ({ id }, body) => {
+  if (!Object.keys(body).length) {
+    return Promise.reject({ status: 400, msg: 'Bad Request' });
+  }
+  return db
+    .from('restaurants')
+    .where('rest_id', id)
+    .update(body)
+    .returning('*')
+    .then(([restaurant]) => {
+      if (!restaurant) {
+        return Promise.reject({
+          status: 404,
+          msg: `Restaurant ${id} not found`
+        });
+      }
+      return restaurant;
+    });
+};
+
 exports.selectRestaurants = ({
   order_by = 'asc',
   open_late,

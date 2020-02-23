@@ -631,5 +631,67 @@ describe('/api', () => {
         test.todo("If queried rest_name doesn't exist, will respond with 404");
       });
     });
+    describe('PATCH /:id', () => {
+      test('PATCH /:id responds with 200', () =>
+        request(app)
+          .patch('/api/restaurants/2')
+          .send({ rest_name: 'a' })
+          .expect(200));
+      test('PATCH /:id responds with updated restaurant object', () => {
+        const possibleUpdates = [
+          { rest_name: 'a' },
+          { website: 'www.newweb.com' },
+          { open_late: false },
+          { area_id: 3 }
+        ];
+        const goodRequests = possibleUpdates.map(update => {
+          const [key, value] = Object.entries(update)[0];
+          return request(app)
+            .patch('/api/restaurants/2')
+            .send(update)
+            .then(({ body: { restaurant } }) => {
+              expect(restaurant.rest_id).toBe(2);
+              expect(restaurant[key]).toBe(value);
+            });
+        });
+        return Promise.all(goodRequests);
+      });
+
+      // ------ ERRORS -------
+      test('PATCH /:id responds with 404 when id not found', () =>
+        request(app)
+          .patch('/api/restaurants/200')
+          .send({ rest_name: 'a' })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Restaurant 200 not found');
+          }));
+      test('PATCH /:id responds with 400 when id is not valid', () =>
+        request(app)
+          .patch('/api/restaurants/bad-id')
+          .send({ rest_name: 'a' })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Bad Request');
+          }));
+      test('PATCH /:id responds with 400 when invalid body sent', () => {
+        const invalidBodies = [
+          { not_a_key: 'a' },
+          { open_late: 'not-boolean' },
+          { serves_hot_meals: 'not-boolean' },
+          {}
+        ];
+        const badRequests = invalidBodies.map(invalidBody => {
+          return request(app)
+            .patch('/api/restaurants/bad-id')
+            .send(invalidBody)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            });
+        });
+        return Promise.all(badRequests);
+      });
+    });
   });
 });
