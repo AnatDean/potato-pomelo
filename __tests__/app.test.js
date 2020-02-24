@@ -841,6 +841,7 @@ describe('/api', () => {
               expect(restaurant.rest_types).toEqual([
                 { type_id: 1, type: 'bar' },
                 { type_id: 2, type: 'cafe' }
+                // TODO - make sure rest-type property is in there too!
               ]);
             }));
         // ----- ERRORS ------
@@ -929,6 +930,40 @@ describe('/api', () => {
         );
         return Promise.all(badRequests);
       });
+    });
+  });
+  describe('/restaurants/types/:rest_type_id', () => {
+    describe('DELETE', () => {
+      test('when deleted responds with 204', () =>
+        request(app)
+          .delete('/api/restaurants/types/4')
+          .expect(204));
+      test('removes rest-type entry', () =>
+        request(app)
+          .delete('/api/restaurants/types/4')
+          .then(() => request(app).get('/api/restaurants/2'))
+          .then(({ body: { restaurant } }) => {
+            expect(restaurant.rest_types).not.toContainEqual({
+              type_id: 2,
+              type: 'cafe'
+              // rest_type_id 4
+            });
+          }));
+      // ------ ERRORS ------
+      test('responds with 404 when rest_type not found', () =>
+        request(app)
+          .delete('/api/restaurants/types/400')
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Rest-type 400 not found');
+          }));
+      test('responds with 400 when provided bad id', () =>
+        request(app)
+          .delete('/api/restaurants/types/bad-id')
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Bad Request');
+          }));
     });
   });
 });

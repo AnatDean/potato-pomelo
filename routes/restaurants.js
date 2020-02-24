@@ -7,7 +7,10 @@ const {
   getRestaurantById
 } = require('../controllers/restaurants');
 
-const { postTypeToRestaurant } = require('../controllers/restaurantTypes');
+const {
+  postTypeToRestaurant,
+  deleteRestType
+} = require('../controllers/restaurantTypes');
 const { handleMultipleQueryValues } = require('../middleware/');
 
 restaurantsRouter
@@ -22,5 +25,7 @@ restaurantsRouter
   .get(getRestaurantById);
 
 restaurantsRouter.route('/:id/types').post(postTypeToRestaurant);
+
+restaurantsRouter.route('/types/:rest_type_id').delete(deleteRestType);
 
 module.exports = restaurantsRouter;

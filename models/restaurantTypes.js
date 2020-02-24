@@ -22,3 +22,18 @@ exports.insertTypeToRestaurant = ({ id }, body) => {
       return { ...added_rest_type, type };
     });
 };
+
+exports.removeRestType = ({ rest_type_id }) => {
+  return db
+    .from('restaurant-types')
+    .where('rest_type_id', rest_type_id)
+    .del()
+    .then(delCount => {
+      if (!delCount) {
+        return Promise.reject({
+          status: 404,
+          msg: `Rest-type ${rest_type_id} not found`
+        });
+      }
+    });
+};
