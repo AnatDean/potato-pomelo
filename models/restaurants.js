@@ -24,36 +24,34 @@ exports.updateRestaurant = ({ id }, body) => {
     });
 };
 
+const getRestTypesByRestId = id => {
+  return db
+    .select('restaurant-types.type_id', 'restaurant-types.rest_type_id', 'type')
+    .from('restaurant-types')
+    .join('types', 'types.type_id', 'restaurant-types.type_id')
+    .where('restaurant-types.rest_id', id);
+};
+
 exports.selectRestaurantById = ({ id }) => {
-  const restaurantsWithTypesQuery = db
-    .select('restaurants.*', 'restaurant-types.type_id', 'type') //type
+  const restaurantQuery = db
+    .select('restaurants.*')
     .from('restaurants')
     .where('restaurants.rest_id', id)
-    .leftJoin(
-      'restaurant-types',
-      'restaurants.rest_id',
-      'restaurant-types.rest_id'
-    )
-    .leftJoin('types', 'types.type_id', 'restaurant-types.type_id');
+    .first();
 
-  const restTypesWithTypeNamesQuery = db
-    .select('restaurant-types.type_id', 'rest_id', 'type')
-    .from('restaurant-types')
-    .join('types', 'types.type_id', 'restaurant-types.type_id');
-
-  return Promise.all([
-    restaurantsWithTypesQuery,
-    restTypesWithTypeNamesQuery
-  ]).then(([restaurants, rest_types]) => {
-    if (!restaurants.length) {
-      return Promise.reject({ status: 404, msg: `Restaurant ${id} not found` });
+  const restTypesQuery = getRestTypesByRestId(id);
+  return Promise.all([restaurantQuery, restTypesQuery]).then(
+    ([restaurant, rest_types]) => {
+      if (!restaurant) {
+        return Promise.reject({
+          status: 404,
+          msg: `Restaurant ${id} not found`
+        });
+      }
+      const formattedRestaurant = { ...restaurant, rest_types };
+      return formattedRestaurant;
     }
-    const [formattedRestaurant] = formatRestaurantTypeQuery(
-      restaurants,
-      rest_types
-    );
-    return formattedRestaurant;
-  });
+  );
 };
 exports.insertRestaurant = body => {
   const neededKeys = ['rest_name', 'area_id', 'website'];

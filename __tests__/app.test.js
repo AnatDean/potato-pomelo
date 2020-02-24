@@ -686,8 +686,8 @@ describe('/api', () => {
             .then(({ body: { restaurant } }) => {
               expect(restaurant).toContainKeys(['rest_types']);
               expect(restaurant.rest_types).toEqual([
-                { type_id: 1, type: 'bar' },
-                { type_id: 3, type: 'restaurant' }
+                { type_id: 1, type: 'bar', rest_type_id: 10 },
+                { type_id: 3, type: 'restaurant', rest_type_id: 11 }
               ]);
             }));
         // ------ ERRORS ------
@@ -837,10 +837,11 @@ describe('/api', () => {
           request(app)
             .get('/api/restaurants/2')
             .then(({ body: { restaurant } }) => {
+              // console.log(restaurant);
               expect(restaurant).toContainKeys(['rest_types']);
               expect(restaurant.rest_types).toEqual([
-                { type_id: 1, type: 'bar' },
-                { type_id: 2, type: 'cafe' }
+                { type_id: 1, type: 'bar', rest_type_id: 3 },
+                { type_id: 2, type: 'cafe', rest_type_id: 4 }
                 // TODO - make sure rest-type property is in there too!
               ]);
             }));
@@ -889,7 +890,8 @@ describe('/api', () => {
           .then(({ body: { restaurant } }) => {
             expect(restaurant.rest_types).toContainEqual({
               type_id: 3,
-              type: 'restaurant'
+              type: 'restaurant',
+              rest_type_id: 10
             });
           }));
       // ----- ERRORS ------
