@@ -743,5 +743,38 @@ describe('/api', () => {
           .send({ ...validBody, area_id: 100 })
           .expect(404));
     });
+    describe('DELETE /:id ', () => {
+      test('Responds with 204', () =>
+        request(app)
+          .delete('/api/restaurants/2')
+          .expect(204));
+      test('Removes specified restaurant', () => {
+        return request(app)
+          .delete('/api/restaurants/2')
+          .then(() => {
+            return request(app).get('/api/restaurants');
+          })
+          .then(({ body: { restaurants } }) => {
+            const restIds = restaurants.map(({ rest_id }) => rest_id);
+            expect(restIds).not.toContain(2);
+          });
+      });
+      test.todo('confirm deletions remove junction entry');
+      // ----- ERRORS ------
+      test('Will respond with 404 if restaurant not found', () =>
+        request(app)
+          .delete('/api/restaurants/200')
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Not Found');
+          }));
+      test('Will respond with 400 if bad id provided', () =>
+        request(app)
+          .delete('/api/restaurants/bad-id')
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Bad Request');
+          }));
+    });
   });
 });

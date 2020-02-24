@@ -5,7 +5,10 @@ exports.up = function(knex) {
       .integer('type_id')
       .references('types.type_id')
       .onDelete('CASCADE');
-    restaurantsTypesTable.integer('rest_id').references('restaurants.rest_id');
+    restaurantsTypesTable
+      .integer('rest_id')
+      .references('restaurants.rest_id')
+      .onDelete('CASCADE');
   });
 };
 

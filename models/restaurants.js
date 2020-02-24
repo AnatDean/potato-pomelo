@@ -2,6 +2,7 @@ const db = require('../db/connection');
 const difference = require('lodash/difference');
 const { formatRestaurantTypeQuery } = require('../utils/');
 const { checkIfMixedQueryTypes } = require('./utils');
+
 exports.updateRestaurant = ({ id }, body) => {
   if (!Object.keys(body).length) {
     return Promise.reject({ status: 400, msg: 'Bad Request' });
@@ -37,6 +38,13 @@ exports.insertRestaurant = body => {
     .into('restaurants')
     .returning('*')
     .then(([restaurant]) => restaurant);
+};
+
+exports.removeRestaurant = ({ id }) => {
+  return db
+    .from('restaurants')
+    .where('rest_id', id)
+    .del();
 };
 
 exports.selectRestaurants = ({

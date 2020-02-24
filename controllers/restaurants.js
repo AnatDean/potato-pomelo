@@ -1,9 +1,10 @@
+const { checkExists } = require('../models/utils');
 const {
   selectRestaurants,
   updateRestaurant,
-  insertRestaurant
+  insertRestaurant,
+  removeRestaurant
 } = require('../models/restaurants');
-const { checkExists } = require('../models/utils');
 exports.getRestaurants = (req, res, next) => {
   checkExists(req.query)
     .then(() => selectRestaurants(req.query))
@@ -26,6 +27,15 @@ exports.postRestaurant = (req, res, next) => {
     .then(() => insertRestaurant(req.body))
     .then(restaurant => {
       res.status(201).send({ restaurant });
+    })
+    .catch(next);
+};
+
+exports.deleteRestaurantById = (req, res, next) => {
+  checkExists({ rest_id: req.params.id })
+    .then(() => removeRestaurant(req.params))
+    .then(() => {
+      res.sendStatus(204);
     })
     .catch(next);
 };

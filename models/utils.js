@@ -1,10 +1,12 @@
 const { selectTypeByIdentifier } = require('./types');
 const { selectAreaByIdentifier } = require('./areas');
+const db = require('../db/connection');
 
-exports.checkExists = ({ type, area, rest_name, area_id }) => {
+exports.checkExists = ({ type, area, rest_name, area_id, rest_id }) => {
   let typeCheck;
   let areaCheck;
   let areaIdCheck;
+  let restCheck;
   if (type) {
     typeCheck = Promise.all(
       type.map(t => selectTypeByIdentifier({ identifier: t }))
@@ -19,8 +21,21 @@ exports.checkExists = ({ type, area, rest_name, area_id }) => {
   if (area_id) {
     areaIdCheck = selectAreaByIdentifier({ identifier: area_id });
   }
+  if (rest_id) {
+    restCheck = db
+      .select('*')
+      .from('restaurants')
+      .where('rest_id', rest_id)
+      .then(([restaurant]) => {
+        if (!restaurant) {
+          return Promise.reject({ status: 404, msg: 'Not Found' });
+        }
+        return restaurant;
+      });
+    // TODO - refactor to have this in own model for id
+  }
 
-  return Promise.all([areaCheck, typeCheck, areaIdCheck]);
+  return Promise.all([areaCheck, typeCheck, areaIdCheck, restCheck]);
 };
 
 exports.checkIfMixedQueryTypes = query => {
