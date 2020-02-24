@@ -116,16 +116,11 @@ exports.selectRestaurants = ({
       });
     }
   }
-  const restaurantsWithTypesQuery = db
-    .select('restaurants.*', 'restaurant-types.type_id', 'type') //type
+  const restaurantsQuery = db
+    .select('restaurants.*') //type
     .from('restaurants')
     .orderBy('rest_name', order_by)
-    .leftJoin(
-      'restaurant-types',
-      'restaurants.rest_id',
-      'restaurant-types.rest_id'
-    )
-    .leftJoin('types', 'types.type_id', 'restaurant-types.type_id')
+
     .modify(queryBuilder => {
       if (open_late) queryBuilder.where('open_late', '=', open_late);
       if (hot_meal) queryBuilder.where('serves_hot_meals', '=', hot_meal);
@@ -138,26 +133,33 @@ exports.selectRestaurants = ({
       if (type) {
         const isQueriedById = type.every(t => /\d/.test(t));
         const column = isQueriedById ? 'restaurant-types.type_id' : 'type';
-        queryBuilder.whereIn(column, type);
+        queryBuilder
+          .leftJoin(
+            'restaurant-types',
+            'restaurants.rest_id',
+            'restaurant-types.rest_id'
+          )
+          .leftJoin('types', 'types.type_id', 'restaurant-types.type_id')
+          .distinct('restaurants.rest_id')
+          .whereIn(column, type);
       }
     });
 
   const restTypesWithTypeNamesQuery = db
-    .select('restaurant-types.type_id', 'rest_id', 'type')
+    .select('restaurant-types.type_id', 'rest_type_id', 'rest_id', 'type')
     .from('restaurant-types')
     .join('types', 'types.type_id', 'restaurant-types.type_id');
 
-  return Promise.all([
-    restaurantsWithTypesQuery,
-    restTypesWithTypeNamesQuery
-  ]).then(([restaurants, rest_types]) => {
-    if (!restaurants.length) {
-      return Promise.reject({ status: 404, msg: 'Not Found' });
+  return Promise.all([restaurantsQuery, restTypesWithTypeNamesQuery]).then(
+    ([restaurants, rest_types]) => {
+      if (!restaurants.length) {
+        return Promise.reject({ status: 404, msg: 'Not Found' });
+      }
+      const formattedRestaurants = formatRestaurantTypeQuery(
+        restaurants,
+        rest_types
+      );
+      return formattedRestaurants;
     }
-    const formattedRestaurants = formatRestaurantTypeQuery(
-      restaurants,
-      rest_types
-    );
-    return formattedRestaurants;
-  });
+  );
 };

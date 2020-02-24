@@ -81,32 +81,14 @@ exports.formatPairs = (pairs, restLookUp) => {
   });
 };
 
-const groupTypesByRestaurantId = (rest_id, rest_types) => {
-  return rest_types.reduce(
-    (
-      acc,
-      { rest_id: current_rest_id, type_id: current_type_id, type: current_type }
-    ) => {
-      return current_rest_id === rest_id
-        ? acc.concat([{ type_id: current_type_id, type: current_type }])
-        : acc;
-    },
-    []
-  );
-};
-
 exports.formatRestaurantTypeQuery = (restaurants, rest_types) => {
-  const formattedRestaurants = restaurants.map(
-    ({ type_id, rest_id, ...otherKeys }) => {
-      const currentRestTypes = groupTypesByRestaurantId(rest_id, rest_types);
-      return { ...otherKeys, rest_id, rest_types: currentRestTypes };
+  rest_types.forEach(({ rest_id, ...otherKeys }) => {
+    const selectedRest = restaurants.find(rest => rest.rest_id === rest_id);
+    if (selectedRest) {
+      if (selectedRest.rest_types) {
+        selectedRest.rest_types.push({ ...otherKeys });
+      } else selectedRest.rest_types = [{ ...otherKeys }];
     }
-  );
-  const duplicatesRemoved = formattedRestaurants.filter((restaurant, i) => {
-    const index = formattedRestaurants.indexOf(
-      formattedRestaurants.find(r => r.rest_id === restaurant.rest_id)
-    );
-    return index === i;
   });
-  return duplicatesRemoved;
+  return restaurants;
 };
