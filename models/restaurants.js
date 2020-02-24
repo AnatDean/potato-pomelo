@@ -23,6 +23,37 @@ exports.updateRestaurant = ({ id }, body) => {
     });
 };
 
+exports.selectRestaurantById = ({ id }) => {
+  const restaurantsWithTypesQuery = db
+    .select('restaurants.*', 'restaurant-types.type_id', 'type') //type
+    .from('restaurants')
+    .where('restaurants.rest_id', id)
+    .leftJoin(
+      'restaurant-types',
+      'restaurants.rest_id',
+      'restaurant-types.rest_id'
+    )
+    .leftJoin('types', 'types.type_id', 'restaurant-types.type_id');
+
+  const restTypesWithTypeNamesQuery = db
+    .select('restaurant-types.type_id', 'rest_id', 'type')
+    .from('restaurant-types')
+    .join('types', 'types.type_id', 'restaurant-types.type_id');
+
+  return Promise.all([
+    restaurantsWithTypesQuery,
+    restTypesWithTypeNamesQuery
+  ]).then(([restaurants, rest_types]) => {
+    if (!restaurants.length) {
+      return Promise.reject({ status: 404, msg: `Restaurant ${id} not found` });
+    }
+    const [formattedRestaurant] = formatRestaurantTypeQuery(
+      restaurants,
+      rest_types
+    );
+    return formattedRestaurant;
+  });
+};
 exports.insertRestaurant = body => {
   const neededKeys = ['rest_name', 'area_id', 'website'];
   if (!Object.keys(body).length) {

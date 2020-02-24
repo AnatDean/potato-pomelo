@@ -412,17 +412,391 @@ describe('/api', () => {
     });
   });
   describe('/restaurants', () => {
-    describe('GET /', () => {
-      test('GET / responds with 200', () =>
-        request(app)
-          .get('/api/restaurants')
-          .expect(200));
-      test('GET / responds with an array of restaurant objects', () =>
-        request(app)
-          .get('/api/restaurants')
-          .then(({ body: { restaurants } }) => {
-            expect(Array.isArray(restaurants)).toBe(true);
-            restaurants.forEach(restaurant => {
+    describe('/', () => {
+      describe('GET /', () => {
+        test('GET / responds with 200', () =>
+          request(app)
+            .get('/api/restaurants')
+            .expect(200));
+        test('GET / responds with an array of restaurant objects', () =>
+          request(app)
+            .get('/api/restaurants')
+            .then(({ body: { restaurants } }) => {
+              expect(Array.isArray(restaurants)).toBe(true);
+              restaurants.forEach(restaurant => {
+                expect(restaurant).toContainKeys([
+                  'rest_id',
+                  'rest_name',
+                  'open_late',
+                  'serves_hot_meals',
+                  'area_id',
+                  'website'
+                ]);
+              });
+            }));
+        test('GET / responds with array of all of restaurants type ids', () =>
+          request(app)
+            .get('/api/restaurants')
+            .then(({ body: { restaurants } }) => {
+              expect(restaurants[0]).toContainKeys(['rest_types']);
+              expect(restaurants[0].rest_types).toEqual([
+                { type_id: 1, type: 'bar' },
+                { type_id: 2, type: 'cafe' }
+              ]);
+            }));
+        test('GET / defaults order by alphabetical by name', () =>
+          request(app)
+            .get('/api/restaurants')
+            .then(({ body: { restaurants } }) => {
+              expect(restaurants[0].rest_name).toBe('rest-a');
+              expect(restaurants[5].rest_name).toBe('rest-e');
+            }));
+        describe('Queries', () => {
+          test('GET ?order_by can reorder by name zetabetically', () =>
+            request(app)
+              .get('/api/restaurants?order_by=desc')
+              .then(({ body: { restaurants, msg } }) => {
+                expect(restaurants[0].rest_name).toBe('rest-e');
+                expect(restaurants[5].rest_name).toBe('rest-a');
+              }));
+          test('GET ?open_late can filter restaurants by only open late', () =>
+            request(app)
+              .get('/api/restaurants?open_late=true')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(rest.open_late).toBe(true);
+                });
+              }));
+          test('GET ?hot_meal can filter restaurants by those that serve hot meals ', () =>
+            request(app)
+              .get('/api/restaurants?hot_meal=true')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(rest.serves_hot_meals).toBe(true);
+                });
+              }));
+          test('GET ?area can filter restaurants by a specific area', () =>
+            request(app)
+              .get('/api/restaurants?area=2')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(rest.area_id).toBe(2);
+                });
+              }));
+          test('GET ?area can filter restaurants by a multiple areas', () =>
+            request(app)
+              .get('/api/restaurants?area=2,3')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(rest.area_id === 2 || rest.area_id === 3).toBeTruthy();
+                });
+              }));
+          test('GET ?type can filter restaurants by certain types', () =>
+            request(app)
+              .get('/api/restaurants?type=1')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(
+                    rest.rest_types.find(r => r.type_id === 1)
+                  ).toBeTruthy();
+                });
+              }));
+
+          test('GET ?type can filter restaurants by multiple types', () =>
+            request(app)
+              .get('/api/restaurants?type=1,2')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(
+                    rest.rest_types.find(
+                      r => r.type_id === 1 || r.type_id === 2
+                    )
+                  ).toBeTruthy();
+                });
+              }));
+          test('GET ?type can filter restaurants by multiple types', () =>
+            request(app)
+              .get('/api/restaurants?type=bar,cafe')
+              .expect(200)
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(
+                    rest.rest_types.find(
+                      r => r.type === 'bar' || r.type === 'cafe'
+                    )
+                  ).toBeTruthy();
+                });
+              }));
+          test('GET ?rest_name can filter restaurants by search term', () =>
+            request(app)
+              .get('/api/restaurants?rest_name=d')
+              .then(({ body: { restaurants } }) => {
+                expect(restaurants.length).toBe(2);
+                restaurants.forEach(rest => {
+                  expect(rest.rest_name.includes('d')).toBeTruthy();
+                });
+              }));
+          test('GET ? can combine queries', () =>
+            request(app)
+              .get('/api/restaurants?type=2&open_late=true')
+              .then(({ body: { restaurants } }) => {
+                restaurants.forEach(rest => {
+                  expect(rest.open_late).toBe(true);
+                  expect(
+                    rest.rest_types.find(r => r.type_id === 2)
+                  ).toBeTruthy();
+                });
+              }));
+        });
+        describe('Errors', () => {
+          test("If queried type id doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?type=345')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Type 345 not found');
+              }));
+
+          test("If queried type doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?type=not-a-type')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Type not-a-type not found');
+              }));
+          test("If one of multiple queried types doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?type=not-a-type,cafe')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Type not-a-type not found');
+              }));
+
+          test("If queried area id doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?area=345')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Area does not exist');
+              }));
+          test("If queried area doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?area=not-an-area')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Area does not exist');
+              }));
+          test("If one of multiple queried areas don't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?area=area-a,bad')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Area does not exist');
+              }));
+          test('if other queries will send bad request', () => {
+            const nonsensicalQueries = [
+              'open_late=bad',
+              'hot_meal=bad',
+              'order_by=bad'
+            ];
+            const badRequests = nonsensicalQueries.map(query =>
+              request(app)
+                .get(`/api/restaurants?${query}`)
+                .expect(400)
+                .then(({ body: { msg } }) => {
+                  expect(msg).toBe('Bad Request');
+                })
+            );
+            return Promise.all(badRequests);
+          });
+          test('if try to mix and match multiple types - using id and name will 400', () =>
+            request(app)
+              .get('/api/restaurants?type=1,cafe')
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe(
+                  'Bad Request, for multiple queries you must choose either ids or names'
+                );
+              }));
+          test('if try to mix and match multiple areas - using id and name will 400', () =>
+            request(app)
+              .get('/api/restaurants?area=1,area-a')
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe(
+                  'Bad Request, for multiple queries you must choose either ids or names'
+                );
+              }));
+          test("if any of multiple queried areas don't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?area=1,200')
+              .expect(404));
+          test("if any of multiple queried types don't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?type=not-there,cafe')
+              .expect(404));
+          test.todo(
+            "If queried rest_name doesn't exist, will respond with 404"
+          );
+        });
+      });
+      describe('POST /', () => {
+        const validBody = {
+          rest_name: 'rest-test',
+          area_id: 2,
+          website: 'www.rest-test.com',
+          types: [1, 2] // TODO <-
+        };
+        test('POST / responds with 201 with minimum keys needed', () =>
+          request(app)
+            .post('/api/restaurants')
+            .send(validBody)
+            .expect(201));
+        test('POST / responds with posted restaurant object', () =>
+          request(app)
+            .post('/api/restaurants')
+            .send(validBody)
+            .then(({ body: { restaurant } }) => {
+              expect(restaurant.rest_id).toBe(7);
+              expect(restaurant.rest_name).toBe('rest-test');
+              expect(restaurant.area_id).toBe(2);
+              expect(restaurant.website).toBe('www.rest-test.com');
+            }));
+        test.todo('POST / creates a junction entry in rest-types');
+        // ------ ERRORS ------
+        test('If not provided valid body will send 400 ', () => {
+          const invalidBodies = [
+            { rest_name: 'rest-test' }, // missing required keys
+            { rest_name: 'rest-test', website: 'www.test.come' },
+            { ...validBody, extra_key: 'bad' },
+            { ...validBody, open_late: 'invalid value' },
+            {}
+            // TODO - check if no types property
+          ];
+          const invalidRequests = invalidBodies.map(invalidBody =>
+            request(app)
+              .post('/api/restaurants')
+              .send(invalidBody)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Bad Request');
+              })
+          );
+          return Promise.all(invalidRequests);
+        });
+        test("If area id provided doesn't exist will respond with 404", () =>
+          request(app)
+            .post('/api/restaurants')
+            .send({ ...validBody, area_id: 100 })
+            .expect(404));
+      });
+    });
+    describe('/:id', () => {
+      describe('PATCH /:id', () => {
+        test('PATCH /:id responds with 200', () =>
+          request(app)
+            .patch('/api/restaurants/2')
+            .send({ rest_name: 'a' })
+            .expect(200));
+        test('PATCH /:id responds with updated restaurant object', () => {
+          const possibleUpdates = [
+            { rest_name: 'a' },
+            { website: 'www.newweb.com' },
+            { open_late: false },
+            { area_id: 3 }
+          ];
+          const goodRequests = possibleUpdates.map(update => {
+            const [key, value] = Object.entries(update)[0];
+            return request(app)
+              .patch('/api/restaurants/2')
+              .send(update)
+              .then(({ body: { restaurant } }) => {
+                expect(restaurant.rest_id).toBe(2);
+                expect(restaurant[key]).toBe(value);
+              });
+          });
+          return Promise.all(goodRequests);
+        });
+
+        // ------ ERRORS -------
+        test('PATCH /:id responds with 404 when id not found', () =>
+          request(app)
+            .patch('/api/restaurants/200')
+            .send({ rest_name: 'a' })
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Restaurant 200 not found');
+            }));
+        test('PATCH /:id responds with 400 when id is not valid', () =>
+          request(app)
+            .patch('/api/restaurants/bad-id')
+            .send({ rest_name: 'a' })
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
+        test('PATCH /:id responds with 400 when invalid body sent', () => {
+          const invalidBodies = [
+            { not_a_key: 'a' },
+            { open_late: 'not-boolean' },
+            { serves_hot_meals: 'not-boolean' },
+            {}
+          ];
+          const badRequests = invalidBodies.map(invalidBody => {
+            return request(app)
+              .patch('/api/restaurants/bad-id')
+              .send(invalidBody)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Bad Request');
+              });
+          });
+          return Promise.all(badRequests);
+        });
+      });
+
+      describe('DELETE /:id ', () => {
+        test('Responds with 204', () =>
+          request(app)
+            .delete('/api/restaurants/2')
+            .expect(204));
+        test('Removes specified restaurant', () => {
+          return request(app)
+            .delete('/api/restaurants/2')
+            .then(() => {
+              return request(app).get('/api/restaurants');
+            })
+            .then(({ body: { restaurants } }) => {
+              const restIds = restaurants.map(({ rest_id }) => rest_id);
+              expect(restIds).not.toContain(2);
+            });
+        });
+        test.todo('confirm deletions remove junction entry');
+        // ----- ERRORS ------
+        test('Will respond with 404 if restaurant not found', () =>
+          request(app)
+            .delete('/api/restaurants/200')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Not Found');
+            }));
+        test('Will respond with 400 if bad id provided', () =>
+          request(app)
+            .delete('/api/restaurants/bad-id')
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
+      });
+      describe('GET /:id', () => {
+        test('Will respond with 200', () =>
+          request(app)
+            .get('/api/restaurants/2')
+            .expect(200));
+        test('Will respond with correct restaurant ', () =>
+          request(app)
+            .get('/api/restaurants/2')
+            .then(({ body: { restaurant } }) => {
               expect(restaurant).toContainKeys([
                 'rest_id',
                 'rest_name',
@@ -431,350 +805,33 @@ describe('/api', () => {
                 'area_id',
                 'website'
               ]);
-            });
-          }));
-      test('GET / responds with array of all of restaurants type ids', () =>
-        request(app)
-          .get('/api/restaurants')
-          .then(({ body: { restaurants } }) => {
-            expect(restaurants[0]).toContainKeys(['rest_types']);
-            expect(restaurants[0].rest_types).toEqual([
-              { type_id: 1, type: 'bar' },
-              { type_id: 2, type: 'cafe' }
-            ]);
-          }));
-      test('GET / defaults order by alphabetical by name', () =>
-        request(app)
-          .get('/api/restaurants')
-          .then(({ body: { restaurants } }) => {
-            expect(restaurants[0].rest_name).toBe('rest-a');
-            expect(restaurants[5].rest_name).toBe('rest-e');
-          }));
-      describe('Queries', () => {
-        test('GET ?order_by can reorder by name zetabetically', () =>
-          request(app)
-            .get('/api/restaurants?order_by=desc')
-            .then(({ body: { restaurants, msg } }) => {
-              expect(restaurants[0].rest_name).toBe('rest-e');
-              expect(restaurants[5].rest_name).toBe('rest-a');
             }));
-        test('GET ?open_late can filter restaurants by only open late', () =>
+        test('GET / responds with array of all of restaurants type ids', () =>
           request(app)
-            .get('/api/restaurants?open_late=true')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.open_late).toBe(true);
-              });
-            }));
-        test('GET ?hot_meal can filter restaurants by those that serve hot meals ', () =>
-          request(app)
-            .get('/api/restaurants?hot_meal=true')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.serves_hot_meals).toBe(true);
-              });
-            }));
-        test('GET ?area can filter restaurants by a specific area', () =>
-          request(app)
-            .get('/api/restaurants?area=2')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.area_id).toBe(2);
-              });
-            }));
-        test('GET ?area can filter restaurants by a multiple areas', () =>
-          request(app)
-            .get('/api/restaurants?area=2,3')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.area_id === 2 || rest.area_id === 3).toBeTruthy();
-              });
-            }));
-        test('GET ?type can filter restaurants by certain types', () =>
-          request(app)
-            .get('/api/restaurants?type=1')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.rest_types.find(r => r.type_id === 1)).toBeTruthy();
-              });
-            }));
-
-        test('GET ?type can filter restaurants by multiple types', () =>
-          request(app)
-            .get('/api/restaurants?type=1,2')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(
-                  rest.rest_types.find(r => r.type_id === 1 || r.type_id === 2)
-                ).toBeTruthy();
-              });
-            }));
-        test('GET ?type can filter restaurants by multiple types', () =>
-          request(app)
-            .get('/api/restaurants?type=bar,cafe')
-            .expect(200)
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(
-                  rest.rest_types.find(
-                    r => r.type === 'bar' || r.type === 'cafe'
-                  )
-                ).toBeTruthy();
-              });
-            }));
-        test('GET ?rest_name can filter restaurants by search term', () =>
-          request(app)
-            .get('/api/restaurants?rest_name=d')
-            .then(({ body: { restaurants } }) => {
-              expect(restaurants.length).toBe(2);
-              restaurants.forEach(rest => {
-                expect(rest.rest_name.includes('d')).toBeTruthy();
-              });
-            }));
-        test('GET ? can combine queries', () =>
-          request(app)
-            .get('/api/restaurants?type=2&open_late=true')
-            .then(({ body: { restaurants } }) => {
-              restaurants.forEach(rest => {
-                expect(rest.open_late).toBe(true);
-                expect(rest.rest_types.find(r => r.type_id === 2)).toBeTruthy();
-              });
-            }));
-      });
-      describe('Errors', () => {
-        test("If queried type id doesn't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?type=345')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Type 345 not found');
-            }));
-
-        test("If queried type doesn't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?type=not-a-type')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Type not-a-type not found');
-            }));
-        test("If one of multiple queried types doesn't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?type=not-a-type,cafe')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Type not-a-type not found');
-            }));
-
-        test("If queried area id doesn't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?area=345')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Area does not exist');
-            }));
-        test("If queried area doesn't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?area=not-an-area')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Area does not exist');
-            }));
-        test("If one of multiple queried areas don't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?area=area-a,bad')
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Area does not exist');
-            }));
-        test('if other queries will send bad request', () => {
-          const nonsensicalQueries = [
-            'open_late=bad',
-            'hot_meal=bad',
-            'order_by=bad'
-          ];
-          const badRequests = nonsensicalQueries.map(query =>
-            request(app)
-              .get(`/api/restaurants?${query}`)
-              .expect(400)
-              .then(({ body: { msg } }) => {
-                expect(msg).toBe('Bad Request');
-              })
-          );
-          return Promise.all(badRequests);
-        });
-        test('if try to mix and match multiple types - using id and name will 400', () =>
-          request(app)
-            .get('/api/restaurants?type=1,cafe')
-            .expect(400)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe(
-                'Bad Request, for multiple queries you must choose either ids or names'
-              );
-            }));
-        test('if try to mix and match multiple areas - using id and name will 400', () =>
-          request(app)
-            .get('/api/restaurants?area=1,area-a')
-            .expect(400)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe(
-                'Bad Request, for multiple queries you must choose either ids or names'
-              );
-            }));
-        test("if any of multiple queried areas don't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?area=1,200')
-            .expect(404));
-        test("if any of multiple queried types don't exist, will respond with 404", () =>
-          request(app)
-            .get('/api/restaurants?type=not-there,cafe')
-            .expect(404));
-        test.todo("If queried rest_name doesn't exist, will respond with 404");
-      });
-    });
-    describe('PATCH /:id', () => {
-      test('PATCH /:id responds with 200', () =>
-        request(app)
-          .patch('/api/restaurants/2')
-          .send({ rest_name: 'a' })
-          .expect(200));
-      test('PATCH /:id responds with updated restaurant object', () => {
-        const possibleUpdates = [
-          { rest_name: 'a' },
-          { website: 'www.newweb.com' },
-          { open_late: false },
-          { area_id: 3 }
-        ];
-        const goodRequests = possibleUpdates.map(update => {
-          const [key, value] = Object.entries(update)[0];
-          return request(app)
-            .patch('/api/restaurants/2')
-            .send(update)
+            .get('/api/restaurants/2')
             .then(({ body: { restaurant } }) => {
-              expect(restaurant.rest_id).toBe(2);
-              expect(restaurant[key]).toBe(value);
-            });
-        });
-        return Promise.all(goodRequests);
-      });
-
-      // ------ ERRORS -------
-      test('PATCH /:id responds with 404 when id not found', () =>
-        request(app)
-          .patch('/api/restaurants/200')
-          .send({ rest_name: 'a' })
-          .expect(404)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Restaurant 200 not found');
-          }));
-      test('PATCH /:id responds with 400 when id is not valid', () =>
-        request(app)
-          .patch('/api/restaurants/bad-id')
-          .send({ rest_name: 'a' })
-          .expect(400)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Bad Request');
-          }));
-      test('PATCH /:id responds with 400 when invalid body sent', () => {
-        const invalidBodies = [
-          { not_a_key: 'a' },
-          { open_late: 'not-boolean' },
-          { serves_hot_meals: 'not-boolean' },
-          {}
-        ];
-        const badRequests = invalidBodies.map(invalidBody => {
-          return request(app)
-            .patch('/api/restaurants/bad-id')
-            .send(invalidBody)
-            .expect(400)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe('Bad Request');
-            });
-        });
-        return Promise.all(badRequests);
-      });
-    });
-    describe('POST /', () => {
-      const validBody = {
-        rest_name: 'rest-test',
-        area_id: 2,
-        website: 'www.rest-test.com',
-        types: [1, 2] // TODO <-
-      };
-      test('POST / responds with 201 with minimum keys needed', () =>
-        request(app)
-          .post('/api/restaurants')
-          .send(validBody)
-          .expect(201));
-      test('POST / responds with posted restaurant object', () =>
-        request(app)
-          .post('/api/restaurants')
-          .send(validBody)
-          .then(({ body: { restaurant } }) => {
-            expect(restaurant.rest_id).toBe(7);
-            expect(restaurant.rest_name).toBe('rest-test');
-            expect(restaurant.area_id).toBe(2);
-            expect(restaurant.website).toBe('www.rest-test.com');
-          }));
-      test.todo('POST / creates a junction entry in rest-types');
-      // ------ ERRORS ------
-      test('If not provided valid body will send 400 ', () => {
-        const invalidBodies = [
-          { rest_name: 'rest-test' }, // missing required keys
-          { rest_name: 'rest-test', website: 'www.test.come' },
-          { ...validBody, extra_key: 'bad' },
-          { ...validBody, open_late: 'invalid value' },
-          {}
-          // TODO - check if no types property
-        ];
-        const invalidRequests = invalidBodies.map(invalidBody =>
+              expect(restaurant).toContainKeys(['rest_types']);
+              expect(restaurant.rest_types).toEqual([
+                { type_id: 1, type: 'bar' },
+                { type_id: 2, type: 'cafe' }
+              ]);
+            }));
+        // ----- ERRORS ------
+        test('will respond with 404 if id not found', () =>
           request(app)
-            .post('/api/restaurants')
-            .send(invalidBody)
+            .get('/api/restaurants/200')
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Restaurant 200 not found');
+            }));
+        test('will respond with 400 if bad id provided', () =>
+          request(app)
+            .get('/api/restaurants/bad-id')
             .expect(400)
             .then(({ body: { msg } }) => {
               expect(msg).toBe('Bad Request');
-            })
-        );
-        return Promise.all(invalidRequests);
+            }));
       });
-      test("If area id provided doesn't exist will respond with 404", () =>
-        request(app)
-          .post('/api/restaurants')
-          .send({ ...validBody, area_id: 100 })
-          .expect(404));
-    });
-    describe('DELETE /:id ', () => {
-      test('Responds with 204', () =>
-        request(app)
-          .delete('/api/restaurants/2')
-          .expect(204));
-      test('Removes specified restaurant', () => {
-        return request(app)
-          .delete('/api/restaurants/2')
-          .then(() => {
-            return request(app).get('/api/restaurants');
-          })
-          .then(({ body: { restaurants } }) => {
-            const restIds = restaurants.map(({ rest_id }) => rest_id);
-            expect(restIds).not.toContain(2);
-          });
-      });
-      test.todo('confirm deletions remove junction entry');
-      // ----- ERRORS ------
-      test('Will respond with 404 if restaurant not found', () =>
-        request(app)
-          .delete('/api/restaurants/200')
-          .expect(404)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Not Found');
-          }));
-      test('Will respond with 400 if bad id provided', () =>
-        request(app)
-          .delete('/api/restaurants/bad-id')
-          .expect(400)
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Bad Request');
-          }));
     });
   });
 });

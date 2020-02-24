@@ -3,7 +3,8 @@ const {
   getRestaurants,
   patchRestaurantById,
   postRestaurant,
-  deleteRestaurantById
+  deleteRestaurantById,
+  getRestaurantById
 } = require('../controllers/restaurants');
 const { handleMultipleQueryValues } = require('../middleware/');
 
@@ -14,6 +15,7 @@ restaurantsRouter
 restaurantsRouter
   .route('/:id')
   .patch(patchRestaurantById)
-  .delete(deleteRestaurantById);
+  .delete(deleteRestaurantById)
+  .get(getRestaurantById);
 
 module.exports = restaurantsRouter;

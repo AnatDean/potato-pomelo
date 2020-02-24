@@ -3,13 +3,22 @@ const {
   selectRestaurants,
   updateRestaurant,
   insertRestaurant,
-  removeRestaurant
+  removeRestaurant,
+  selectRestaurantById
 } = require('../models/restaurants');
 exports.getRestaurants = (req, res, next) => {
   checkExists(req.query)
     .then(() => selectRestaurants(req.query))
     .then(restaurants => {
       res.send({ restaurants });
+    })
+    .catch(next);
+};
+
+exports.getRestaurantById = (req, res, next) => {
+  selectRestaurantById(req.params)
+    .then(restaurant => {
+      res.send({ restaurant });
     })
     .catch(next);
 };
