@@ -795,7 +795,7 @@ describe('/api', () => {
             .delete('/api/restaurants/200')
             .expect(404)
             .then(({ body: { msg } }) => {
-              expect(msg).toBe('Not Found');
+              expect(msg).toBe('Restaurant 200 not found');
             }));
         test('Will respond with 400 if bad id provided', () =>
           request(app)
@@ -848,6 +848,75 @@ describe('/api', () => {
             .then(({ body: { msg } }) => {
               expect(msg).toBe('Bad Request');
             }));
+      });
+    });
+  });
+  describe('/restaurants/:id/types', () => {
+    describe('POST', () => {
+      test('posting a new type responds with 201', () =>
+        request(app)
+          .post('/api/restaurants/2/types')
+          .send({ type_id: 3 })
+          .expect(201));
+      test('responds with created restaurant type', () =>
+        request(app)
+          .post('/api/restaurants/2/types')
+          .send({ type_id: 3 })
+          .then(({ body: { rest_type } }) => {
+            expect(rest_type).toEqual({
+              rest_type_id: 10,
+              type_id: 3,
+              rest_id: 2
+            });
+          }));
+      test('new type should be available when requesting restaurant ', () =>
+        request(app)
+          .post('/api/restaurants/2/types')
+          .send({ type_id: 3 })
+          .then(() => request(app).get('/api/restaurants/2'))
+          .then(({ body: { restaurant } }) => {
+            expect(restaurant.rest_types).toContainEqual({
+              type_id: 3,
+              type: 'restaurant'
+            });
+          }));
+      // ----- ERRORS ------
+      test('Given a non existent restaurant id will respond with 404', () =>
+        request(app)
+          .post('/api/restaurants/200/types')
+          .send({ type_id: 3 })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Not Found');
+          }));
+      test('Given a bad restaurant id will respond with 400', () =>
+        request(app)
+          .post('/api/restaurants/bad-id/types')
+          .send({ type_id: 3 })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Bad Request');
+          }));
+      test("Given a type id that doesn't exist will respond with 404", () =>
+        request(app)
+          .post('/api/restaurants/2/types')
+          .send({ type_id: 30 })
+          .expect(404)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe('Not Found');
+          }));
+      test('Given a bad type id will respond with 400', () => {
+        const badInputs = [{ type_id: 'bad' }, { badkey: 2 }, {}];
+        const badRequests = badInputs.map(badInput =>
+          request(app)
+            .post('/api/restaurants/2/types')
+            .send(badInput)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            })
+        );
+        return Promise.all(badRequests);
       });
     });
   });

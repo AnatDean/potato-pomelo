@@ -5,7 +5,6 @@ exports.handleCustomErrors = (err, req, res, next) => {
 };
 
 exports.handlePostgresErrors = (err, req, res, next) => {
-  // console.log(err);
   const postgresErrorCodes = {
     '42703': {
       status: 400,
@@ -22,6 +21,10 @@ exports.handlePostgresErrors = (err, req, res, next) => {
     '42703': {
       status: 400,
       msg: 'Bad Request'
+    },
+    '23503': {
+      status: 404,
+      msg: 'Not Found'
     }
   };
   if (err.code) {

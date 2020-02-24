@@ -28,7 +28,10 @@ exports.checkExists = ({ type, area, rest_name, area_id, rest_id }) => {
       .where('rest_id', rest_id)
       .then(([restaurant]) => {
         if (!restaurant) {
-          return Promise.reject({ status: 404, msg: 'Not Found' });
+          return Promise.reject({
+            status: 404,
+            msg: `Restaurant ${rest_id} not found`
+          });
         }
         return restaurant;
       });
