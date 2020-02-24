@@ -662,7 +662,7 @@ describe('/api', () => {
           rest_name: 'rest-test',
           area_id: 2,
           website: 'www.rest-test.com',
-          types: [1, 2] // TODO <-
+          types: [1, 3] // TODO <-
         };
         test('POST / responds with 201 with minimum keys needed', () =>
           request(app)
@@ -679,7 +679,17 @@ describe('/api', () => {
               expect(restaurant.area_id).toBe(2);
               expect(restaurant.website).toBe('www.rest-test.com');
             }));
-        test.todo('POST / creates a junction entry in rest-types');
+        test('POST / creates a junction entry in rest-types', () =>
+          request(app)
+            .post('/api/restaurants')
+            .send(validBody)
+            .then(({ body: { restaurant } }) => {
+              expect(restaurant).toContainKeys(['rest_types']);
+              expect(restaurant.rest_types).toEqual([
+                { type_id: 1, type: 'bar' },
+                { type_id: 3, type: 'restaurant' }
+              ]);
+            }));
         // ------ ERRORS ------
         test('If not provided valid body will send 400 ', () => {
           const invalidBodies = [
@@ -866,6 +876,7 @@ describe('/api', () => {
             expect(rest_type).toEqual({
               rest_type_id: 10,
               type_id: 3,
+              type: 'restaurant',
               rest_id: 2
             });
           }));

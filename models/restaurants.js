@@ -2,6 +2,7 @@ const db = require('../db/connection');
 const difference = require('lodash/difference');
 const { formatRestaurantTypeQuery } = require('../utils/');
 const { checkIfMixedQueryTypes } = require('./utils');
+const { insertTypeToRestaurant } = require('./restaurantTypes');
 
 exports.updateRestaurant = ({ id }, body) => {
   if (!Object.keys(body).length) {
@@ -68,7 +69,17 @@ exports.insertRestaurant = body => {
     .insert({ ...restOfBody })
     .into('restaurants')
     .returning('*')
-    .then(([restaurant]) => restaurant);
+    .then(([restaurant]) => {
+      const rest_type_insertions = types.map(type_id =>
+        insertTypeToRestaurant({ id: restaurant.rest_id }, { type_id })
+      );
+      return Promise.all([restaurant, Promise.all(rest_type_insertions)]);
+    })
+    .then(([restaurant, rest_types]) => {
+      return this.selectRestaurantById({ id: restaurant.rest_id });
+
+      // TODO: refactor ^^
+    });
 };
 
 exports.removeRestaurant = ({ id }) => {
