@@ -12,50 +12,54 @@ describe('/api', () => {
   describe('/types', () => {
     describe('/', () => {
       // ------ GET ALL TYPES ------
-      test('GET responds with 200', () =>
-        request(app)
-          .get('/api/types')
-          .expect(200));
-      test('GET responds with array of type objects', () =>
-        request(app)
-          .get('/api/types')
-          .then(({ body: { types } }) => {
-            expect(Array.isArray(types)).toBe(true);
-            types.forEach(type => {
-              expect(type).toContainAllKeys(['type_id', 'type']);
-            });
-          }));
+      describe('GET', () => {
+        test('responds with 200', () =>
+          request(app)
+            .get('/api/types')
+            .expect(200));
+        test('responds with array of type objects', () =>
+          request(app)
+            .get('/api/types')
+            .then(({ body: { types } }) => {
+              expect(Array.isArray(types)).toBe(true);
+              types.forEach(type => {
+                expect(type).toContainAllKeys(['type_id', 'type']);
+              });
+            }));
+      });
       // ------ POST A TYPE ------
-      test('POST / responds with 201', () =>
-        request(app)
-          .post('/api/types')
-          .send({ type: 'new-type' })
-          .expect(201));
-      test('POST / responds with added type object', () =>
-        request(app)
-          .post('/api/types')
-          .send({ type: 'new-type' })
-          .then(({ body: { type } }) => {
-            expect(type).toEqual({ type: 'new-type', type_id: 5 });
-          }));
-      // ------ ERRORS ------
-      test('POST / responds with 400 if provided bad input', () => {
-        const badInputs = [{ type: 4 }, { ty: 'new-type' }, {}];
-        const badResponses = badInputs.map(badInput =>
+      describe('POST', () => {
+        test('POST / responds with 201', () =>
           request(app)
             .post('/api/types')
-            .send(badInput)
-            .expect(400)
-        );
-        return Promise.all(badResponses);
+            .send({ type: 'new-type' })
+            .expect(201));
+        test('POST / responds with added type object', () =>
+          request(app)
+            .post('/api/types')
+            .send({ type: 'new-type' })
+            .then(({ body: { type } }) => {
+              expect(type).toEqual({ type: 'new-type', type_id: 5 });
+            }));
+        // ------ ERRORS ------
+        test('POST / responds with 400 if provided bad input', () => {
+          const badInputs = [{ type: 4 }, { ty: 'new-type' }, {}];
+          const badResponses = badInputs.map(badInput =>
+            request(app)
+              .post('/api/types')
+              .send(badInput)
+              .expect(400)
+          );
+          return Promise.all(badResponses);
+        });
+        test('POST / responds with added type object', () =>
+          request(app)
+            .post('/api/types')
+            .send({ tye: 'new-type' })
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            }));
       });
-      test('POST / responds with added type object', () =>
-        request(app)
-          .post('/api/types')
-          .send({ tye: 'new-type' })
-          .then(({ body: { msg } }) => {
-            expect(msg).toBe('Bad Request');
-          }));
     });
     describe('/:identifier', () => {
       // ------ GET A SINGLE TYPE ------
