@@ -142,6 +142,9 @@ exports.selectRestaurants = ({
     restaurantsWithTypesQuery,
     restTypesWithTypeNamesQuery
   ]).then(([restaurants, rest_types]) => {
+    if (!restaurants.length) {
+      return Promise.reject({ status: 404, msg: 'Not Found' });
+    }
     const formattedRestaurants = formatRestaurantTypeQuery(
       restaurants,
       rest_types

@@ -164,9 +164,16 @@ describe('/api', () => {
                 .get('/api/types/1')
                 .expect(404)
             ));
-        test.todo(
-          'when making endpoint for rest-types table use to prove delete has deleted on cascade the entries there'
-        );
+        test('type is now not available on restaurants from junction table', () =>
+          request(app)
+            .delete('/api/types/1')
+            .then(_ => request(app).get('/api/restaurants/2'))
+            .then(({ body: { restaurant } }) => {
+              expect(restaurant.rest_types).not.toContainEqual({
+                type_id: 1,
+                type: 'bar'
+              });
+            }));
         // ------ ERRORS  ------
         test('DELETE responds with 404 when non existent id', () =>
           request(app)
@@ -630,14 +637,24 @@ describe('/api', () => {
           test("if any of multiple queried areas don't exist, will respond with 404", () =>
             request(app)
               .get('/api/restaurants?area=1,200')
-              .expect(404));
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Area does not exist');
+              }));
           test("if any of multiple queried types don't exist, will respond with 404", () =>
             request(app)
               .get('/api/restaurants?type=not-there,cafe')
-              .expect(404));
-          test.todo(
-            "If queried rest_name doesn't exist, will respond with 404"
-          );
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Type not-there not found');
+              }));
+          test("If queried rest_name doesn't exist, will respond with 404", () =>
+            request(app)
+              .get('/api/restaurants?rest_name=zzzz')
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe('Not Found');
+              }));
         });
       });
       describe('POST /', () => {
@@ -764,14 +781,14 @@ describe('/api', () => {
           return request(app)
             .delete('/api/restaurants/2')
             .then(() => {
-              return request(app).get('/api/restaurants');
+              return request(app)
+                .get('/api/restaurants/2')
+                .expect(404);
             })
-            .then(({ body: { restaurants } }) => {
-              const restIds = restaurants.map(({ rest_id }) => rest_id);
-              expect(restIds).not.toContain(2);
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Restaurant 2 not found');
             });
         });
-        test.todo('confirm deletions remove junction entry');
         // ----- ERRORS ------
         test('Will respond with 404 if restaurant not found', () =>
           request(app)
