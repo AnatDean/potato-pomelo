@@ -693,5 +693,55 @@ describe('/api', () => {
         return Promise.all(badRequests);
       });
     });
+    describe('POST /', () => {
+      const validBody = {
+        rest_name: 'rest-test',
+        area_id: 2,
+        website: 'www.rest-test.com',
+        types: [1, 2] // TODO <-
+      };
+      test('POST / responds with 201 with minimum keys needed', () =>
+        request(app)
+          .post('/api/restaurants')
+          .send(validBody)
+          .expect(201));
+      test('POST / responds with posted restaurant object', () =>
+        request(app)
+          .post('/api/restaurants')
+          .send(validBody)
+          .then(({ body: { restaurant } }) => {
+            expect(restaurant.rest_id).toBe(7);
+            expect(restaurant.rest_name).toBe('rest-test');
+            expect(restaurant.area_id).toBe(2);
+            expect(restaurant.website).toBe('www.rest-test.com');
+          }));
+      test.todo('POST / creates a junction entry in rest-types');
+      // ------ ERRORS ------
+      test('If not provided valid body will send 400 ', () => {
+        const invalidBodies = [
+          { rest_name: 'rest-test' }, // missing required keys
+          { rest_name: 'rest-test', website: 'www.test.come' },
+          { ...validBody, extra_key: 'bad' },
+          { ...validBody, open_late: 'invalid value' },
+          {}
+          // TODO - check if no types property
+        ];
+        const invalidRequests = invalidBodies.map(invalidBody =>
+          request(app)
+            .post('/api/restaurants')
+            .send(invalidBody)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe('Bad Request');
+            })
+        );
+        return Promise.all(invalidRequests);
+      });
+      test("If area id provided doesn't exist will respond with 404", () =>
+        request(app)
+          .post('/api/restaurants')
+          .send({ ...validBody, area_id: 100 })
+          .expect(404));
+    });
   });
 });
