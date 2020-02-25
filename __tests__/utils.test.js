@@ -182,7 +182,7 @@ describe('formatRestaurants', () => {
   });
 });
 
-describe.only('formatPairs', () => {
+describe('formatPairs', () => {
   test('returns an empty array if passed an empty array and empty object', () => {
     expect(formatPairs([], {})).toEqual([]);
   });

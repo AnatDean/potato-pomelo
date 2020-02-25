@@ -80,3 +80,15 @@ exports.formatPairs = (pairs, restLookUp) => {
     };
   });
 };
+
+exports.formatRestaurantTypeQuery = (restaurants, rest_types) => {
+  rest_types.forEach(({ rest_id, ...otherKeys }) => {
+    const selectedRest = restaurants.find(rest => rest.rest_id === rest_id);
+    if (selectedRest) {
+      if (selectedRest.rest_types) {
+        selectedRest.rest_types.push({ ...otherKeys });
+      } else selectedRest.rest_types = [{ ...otherKeys }];
+    }
+  });
+  return restaurants;
+};

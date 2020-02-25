@@ -8,8 +8,16 @@
     "website": "www.rest-a.com"
   },
   {
+    "rest_name": "rest-dd",
+    "area": "area-a",
+    "types": ["bar", "cafe"],
+    "open_late": true,
+    "serves_hot_meals": false,
+    "website": "www.rest-a.com"
+  },
+  {
     "rest_name": "rest-b",
-    "area": "area-c",
+    "area": "area-z",
     "types": ["restaurant"],
     "open_late": false,
     "serves_hot_meals": true,
@@ -17,7 +25,7 @@
   },
   {
     "rest_name": "rest-c",
-    "area": "area-c",
+    "area": "area-z",
     "types": ["cafe"],
     "open_late": false,
     "serves_hot_meals": true,
@@ -33,7 +41,7 @@
   },
   {
     "rest_name": "rest-e",
-    "area": "area-c",
+    "area": "area-z",
     "types": ["market", "bar"],
     "open_late": true,
     "serves_hot_meals": false,
