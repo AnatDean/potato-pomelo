@@ -90,7 +90,7 @@ exports.removeRestaurant = ({ id }) => {
 exports.selectRestaurants = ({
   order_by = 'asc',
   open_late = 'all',
-  hot_meal,
+  has_activities,
   area,
   type,
   rest_name
@@ -134,7 +134,8 @@ exports.selectRestaurants = ({
           .where('closes_at', '>=', '22:00:00')
           .orWhere('closes_at', '<=', '04:00:00');
       }
-      if (hot_meal) queryBuilder.where('serves_hot_meals', '=', hot_meal);
+      if (has_activities)
+        queryBuilder.where('has_activities', '=', has_activities);
       if (area) {
         queryBuilder.whereIn('area_id', area);
       }

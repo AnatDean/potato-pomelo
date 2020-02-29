@@ -36,7 +36,7 @@ describe('/api', () => {
           } = await request(app)
             .post('/api/types')
             .send({ type: 'new-type' });
-          expect(type).toEqual({ type: 'new-type', type_id: 5 });
+          expect(type).toEqual({ type: 'new-type', type_id: 4 });
         });
         // ------ ERRORS ------
         test('POST / responds with 400 if provided bad input', () => {
@@ -438,7 +438,7 @@ describe('/api', () => {
               'rest_name',
               'opens_at',
               'closes_at',
-              'serves_hot_meals',
+              'has_activities',
               'area_id',
               'website'
             ]);
@@ -479,12 +479,12 @@ describe('/api', () => {
               expect(hour).toBeOneOf(['22', '23', '00', '01', '02', '03']);
             });
           });
-          test('GET ?hot_meal can filter restaurants by those that serve hot meals ', async () => {
+          test('GET ?has_activities can filter restaurants by those that have activities ', async () => {
             const {
               body: { restaurants }
-            } = await request(app).get('/api/restaurants?hot_meal=true');
+            } = await request(app).get('/api/restaurants?has_activities=true');
             restaurants.forEach(rest => {
-              expect(rest.serves_hot_meals).toBe(true);
+              expect(rest.has_activities).toBe(true);
             });
           });
           test('GET ?area can filter restaurants by a specific area', async () => {
@@ -611,7 +611,7 @@ describe('/api', () => {
           test('if other queries will send bad request', () => {
             const nonsensicalQueries = [
               'open_late=bad',
-              'hot_meal=bad',
+              'has_activities=bad',
               'order_by=bad'
             ];
             const badRequests = nonsensicalQueries.map(async query => {
@@ -701,8 +701,8 @@ describe('/api', () => {
             .send(validBody);
           expect(restaurant).toContainKeys(['rest_types']);
           expect(restaurant.rest_types).toEqual([
-            { type_id: 1, type: 'bar', rest_type_id: 10 },
-            { type_id: 3, type: 'restaurant', rest_type_id: 11 }
+            { type_id: 1, type: 'bar', rest_type_id: 9 },
+            { type_id: 3, type: 'restaurant', rest_type_id: 10 }
           ]);
         });
         // ------ ERRORS ------
@@ -846,7 +846,7 @@ describe('/api', () => {
             'rest_name',
             'closes_at',
             'opens_at',
-            'serves_hot_meals',
+            'has_activities',
             'area_id',
             'website'
           ]);
@@ -895,7 +895,7 @@ describe('/api', () => {
           .post('/api/restaurants/2/types')
           .send({ type_id: 3 });
         expect(rest_type).toEqual({
-          rest_type_id: 10,
+          rest_type_id: 9,
           type_id: 3,
           type: 'restaurant',
           rest_id: 2
@@ -913,7 +913,7 @@ describe('/api', () => {
         expect(restaurant.rest_types).toContainEqual({
           type_id: 3,
           type: 'restaurant',
-          rest_type_id: 10
+          rest_type_id: 9
         });
       });
       // ----- ERRORS ------

@@ -1,6 +1,1 @@
-[
-  { "type": "bar" },
-  { "type": "cafe" },
-  { "type": "restaurant" },
-  { "type": "activities" }
-]
+[{ "type": "bar" }, { "type": "cafe" }, { "type": "restaurant" }]
