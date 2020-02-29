@@ -42,7 +42,7 @@
   {
     "rest_name": "rest-e",
     "area": "area-z",
-    "types": ["market", "bar"],
+    "types": ["activities", "bar"],
     "open_late": true,
     "serves_hot_meals": false,
     "website": "www.rest-e.com"
