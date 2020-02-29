@@ -3,7 +3,8 @@
     "rest_name": "rest-a",
     "area": "area-a",
     "types": ["bar", "cafe"],
-    "open_late": true,
+    "opens_at": "09:30",
+    "closes_at": "22:00",
     "serves_hot_meals": false,
     "website": "www.rest-a.com"
   },
@@ -11,7 +12,8 @@
     "rest_name": "rest-dd",
     "area": "area-a",
     "types": ["bar", "cafe"],
-    "open_late": true,
+    "opens_at": "10:30",
+    "closes_at": "22:00",
     "serves_hot_meals": false,
     "website": "www.rest-a.com"
   },
@@ -19,7 +21,8 @@
     "rest_name": "rest-b",
     "area": "area-z",
     "types": ["restaurant"],
-    "open_late": false,
+    "opens_at": "11:30",
+    "closes_at": "19:00",
     "serves_hot_meals": true,
     "website": "www.rest-b.com"
   },
@@ -27,7 +30,8 @@
     "rest_name": "rest-c",
     "area": "area-z",
     "types": ["cafe"],
-    "open_late": false,
+    "opens_at": "07:30",
+    "closes_at": "18:00",
     "serves_hot_meals": true,
     "website": "www.rest-c.com"
   },
@@ -35,7 +39,8 @@
     "rest_name": "rest-d",
     "area": "area-b",
     "types": ["cafe"],
-    "open_late": true,
+    "opens_at": "09:30",
+    "closes_at": "23:00",
     "serves_hot_meals": false,
     "website": "www.rest-d.com"
   },
@@ -43,7 +48,8 @@
     "rest_name": "rest-e",
     "area": "area-z",
     "types": ["activities", "bar"],
-    "open_late": true,
+    "opens_at": "12:30",
+    "closes_at": "00:00",
     "serves_hot_meals": false,
     "website": "www.rest-e.com"
   }

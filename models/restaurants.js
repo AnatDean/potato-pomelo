@@ -89,13 +89,20 @@ exports.removeRestaurant = ({ id }) => {
 
 exports.selectRestaurants = ({
   order_by = 'asc',
-  open_late,
+  open_late = 'all',
   hot_meal,
   area,
   type,
   rest_name
 }) => {
-  if (order_by !== 'asc' && order_by !== 'desc') {
+  if ((open_late === 'true') | (open_late === 'false')) {
+    open_late = Boolean(open_late);
+  }
+
+  const orderByConditions = order_by !== 'asc' && order_by !== 'desc';
+  const openLateConditions =
+    open_late !== true && open_late !== false && open_late !== 'all';
+  if (orderByConditions || openLateConditions) {
     return Promise.reject({ status: 400, msg: 'Bad Request' });
   }
   if (type) {
@@ -122,7 +129,11 @@ exports.selectRestaurants = ({
     .orderBy('rest_name', order_by)
 
     .modify(queryBuilder => {
-      if (open_late) queryBuilder.where('open_late', '=', open_late);
+      if (open_late === true) {
+        queryBuilder
+          .where('closes_at', '>=', '22:00:00')
+          .orWhere('closes_at', '<=', '04:00:00');
+      }
       if (hot_meal) queryBuilder.where('serves_hot_meals', '=', hot_meal);
       if (area) {
         queryBuilder.whereIn('area_id', area);
