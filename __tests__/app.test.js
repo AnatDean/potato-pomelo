@@ -436,7 +436,8 @@ describe('/api', () => {
             expect(restaurant).toContainKeys([
               'rest_id',
               'rest_name',
-              'open_late',
+              'opens_at',
+              'closes_at',
               'serves_hot_meals',
               'area_id',
               'website'
@@ -472,8 +473,10 @@ describe('/api', () => {
             const {
               body: { restaurants }
             } = await request(app).get('/api/restaurants?open_late=true');
+            expect(restaurants).toHaveLength(4);
             restaurants.forEach(rest => {
-              expect(rest.open_late).toBe(true);
+              const [hour] = rest.closes_at.split(':');
+              expect(hour).toBeOneOf(['22', '23', '00', '01', '02', '03']);
             });
           });
           test('GET ?hot_meal can filter restaurants by those that serve hot meals ', async () => {
@@ -547,8 +550,9 @@ describe('/api', () => {
             } = await request(app).get(
               '/api/restaurants?type=2&open_late=true'
             );
-            restaurants.forEach(({ open_late, rest_types }) => {
-              expect(open_late).toBe(true);
+            restaurants.forEach(({ closes_at, rest_types }) => {
+              const [hour] = closes_at.split(':');
+              expect(hour).toBeOneOf(['22', '23', '00', '01', '02', '03']);
               expect(rest_types.find(r => r.type_id === 2)).toBeTruthy();
             });
           });
@@ -740,7 +744,7 @@ describe('/api', () => {
           const possibleUpdates = [
             { rest_name: 'a' },
             { website: 'www.newweb.com' },
-            { open_late: false },
+            { closes_at: '22:00:00' },
             { area_id: 3 }
           ];
           const goodRequests = possibleUpdates.map(async update => {
@@ -840,7 +844,8 @@ describe('/api', () => {
           expect(restaurant).toContainKeys([
             'rest_id',
             'rest_name',
-            'open_late',
+            'closes_at',
+            'opens_at',
             'serves_hot_meals',
             'area_id',
             'website'
