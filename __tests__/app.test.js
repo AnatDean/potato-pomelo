@@ -487,6 +487,17 @@ describe('/api', () => {
               expect(rest.has_activities).toBe(true);
             });
           });
+          test.only('GET ?has_activities&open_late can filter restaurants by multiple boolean queries ', async () => {
+            const {
+              body: { restaurants }
+            } = await request(app).get(
+              '/api/restaurants?has_activities=true&open_late=false'
+            );
+            console.log(restaurants);
+            restaurants.forEach(rest => {
+              expect(rest.has_activities).toBe(true);
+            });
+          });
           test('GET ?area can filter restaurants by a specific area', async () => {
             const {
               body: { restaurants }
@@ -510,6 +521,15 @@ describe('/api', () => {
 
             restaurants.forEach(rest => {
               expect(rest.rest_types.find(r => r.type_id === 1)).toBeTruthy();
+            });
+          });
+          test.only('GET ?type can filter restaurants by certain types', async () => {
+            const {
+              body: { restaurants }
+            } = await request(app).get('/api/restaurants?type=3');
+
+            restaurants.forEach(rest => {
+              expect(rest.rest_types.find(r => r.type_id === 3)).toBeTruthy();
             });
           });
 

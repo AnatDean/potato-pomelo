@@ -9,7 +9,9 @@
     "migrate:rollback": "knex migrate:rollback",
     "migrate:latest": "knex migrate:latest",
     "seed-db": "knex seed:run",
-    "test": "jest --watch"
+    "test": "jest --watch",
+    "dev": "nodemon listen.js",
+    "start": "node listen.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,7 @@
   },
   "homepage": "https://github.com/AnatDean/potato-pomelo#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "knex": "^0.20.8",
     "pg": "^7.18.1"
@@ -31,6 +34,7 @@
     "jest": "^25.1.0",
     "jest-extended": "^0.11.5",
     "lodash": "^4.17.15",
+    "nodemon": "^2.0.2",
     "supertest": "^4.0.2"
   }
 }

@@ -37,7 +37,7 @@ exports.postRestaurant = (req, res, next) => {
     .then(restaurant => {
       res.status(201).send({ restaurant });
     })
-    .catch(next);
+    .catch(err => console.log(err) || next(err));
 };
 
 exports.deleteRestaurantById = (req, res, next) => {

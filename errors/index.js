@@ -28,8 +28,10 @@ exports.handlePostgresErrors = (err, req, res, next) => {
     }
   };
   if (err.code) {
-    const { status, msg } = postgresErrorCodes[err.code];
-    res.status(status).send({ msg });
+    if (postgresErrorCodes[err.code]) {
+      const { status, msg } = postgresErrorCodes[err.code];
+      res.status(status).send({ msg });
+    } else next(err);
   } else next(err);
 };
 

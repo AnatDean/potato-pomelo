@@ -61,6 +61,7 @@ exports.insertRestaurant = body => {
   const { types, ...restOfBody } = body;
   const bodyKeys = Object.keys({ ...restOfBody });
   if (difference(neededKeys, bodyKeys).length) {
+    console.log('line 66');
     return Promise.reject({ status: 400, msg: 'Bad Request' });
   }
   return db
@@ -96,7 +97,11 @@ exports.selectRestaurants = ({
   rest_name
 }) => {
   if ((open_late === 'true') | (open_late === 'false')) {
-    open_late = Boolean(open_late);
+    open_late = open_late === 'true' ? true : false;
+  }
+
+  if ((has_activities === 'true') | (has_activities === 'false')) {
+    has_activities = has_activities === 'true' ? true : false;
   }
 
   const orderByConditions = order_by !== 'asc' && order_by !== 'desc';
@@ -134,8 +139,12 @@ exports.selectRestaurants = ({
           .where('closes_at', '>=', '22:00:00')
           .orWhere('closes_at', '<=', '04:00:00');
       }
-      if (has_activities)
+      if (open_late === false) {
+        queryBuilder.where('closes_at', '<=', '22:00:00');
+      }
+      if (has_activities === true || has_activities === false) {
         queryBuilder.where('has_activities', '=', has_activities);
+      }
       if (area) {
         queryBuilder.whereIn('area_id', area);
       }
@@ -145,6 +154,7 @@ exports.selectRestaurants = ({
       if (type) {
         const isQueriedById = type.every(t => /\d/.test(t));
         const column = isQueriedById ? 'restaurant-types.type_id' : 'type';
+
         queryBuilder
           .leftJoin(
             'restaurant-types',
